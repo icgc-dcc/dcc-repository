@@ -55,8 +55,10 @@ import static org.icgc.dcc.repository.gdc.util.GDCFiles.getUpdatedDatetime;
 import static org.icgc.dcc.repository.gdc.util.GDCProjects.getProjectCode;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.stream.Stream;
 
+import org.assertj.core.util.Lists;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositoryFileProcessor;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
@@ -156,7 +158,6 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
         .setRepoDataPath(gdcServer.getType().getDataPath());
 
     for (val indexFile : getIndexFiles(file)) {
-      // TODO: Arbitrary selection of one from many
       val indexFileId = getIndexFileId(indexFile);
       val indexObjectId = resolveObjectId(indexFileId);
       fileCopy.getIndexFile()
@@ -167,6 +168,8 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
           .setFileFormat(getIndexDataFormat(indexFile))
           .setFileSize(getIndexFileSize(indexFile))
           .setFileMd5sum(getIndexMd5sum(indexFile));
+
+      // There should only be one
       break;
     }
 
@@ -182,6 +185,7 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
           .setDonorId(null) // Set downstream
           .setSpecimenId(null) // Set downstream
           .setSpecimenType(resolveSpecimenType(caze))
+          .setMatchedControlSampleId(null) // N/A
           .setSampleId(null) // Set downstream
           .setSubmittedDonorId(resolveSubmittedDonorId(caze))
           .setSubmittedSpecimenId(resolveSubmitterSpecimenId(caze))
@@ -350,65 +354,65 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     return getCaseId(caze);
   }
 
-  private static String resolveSubmitterSpecimenId(JsonNode caze) {
+  private static List<String> resolveSubmitterSpecimenId(JsonNode caze) {
+    val submitterSpecimenId = Lists.<String> newArrayList();
     for (val sample : getCaseSamples(caze)) {
-      // TODO: Arbitrary selection of one from many
-      return getCaseSampleId(sample);
+      submitterSpecimenId.add(getCaseSampleId(sample));
     }
 
-    return null;
+    return submitterSpecimenId;
   }
 
-  private static String resolveSpecimenType(JsonNode caze) {
+  private static List<String> resolveSpecimenType(JsonNode caze) {
+    val specimenType = Lists.<String> newArrayList();
     for (val sample : getCaseSamples(caze)) {
-      // TODO: Arbitrary selection of one from many
-      return getCaseSampleType(sample);
+      specimenType.add(getCaseSampleType(sample));
     }
 
-    return null;
+    return specimenType;
   }
 
-  private static String resolveSubmitterSampleId(JsonNode caze) {
+  private static List<String> resolveSubmitterSampleId(JsonNode caze) {
+    val submitterSampleId = Lists.<String> newArrayList();
     for (val sample : getCaseSamples(caze)) {
       for (val portion : getSamplePortions(sample)) {
         for (val analyte : getPortionAnalytes(portion)) {
           for (val aliquot : getAnalyteAliquots(analyte)) {
-            // TODO: Arbitrary selection of one from many
-            return getAliquotId(aliquot);
+            submitterSampleId.add(getAliquotId(aliquot));
           }
         }
       }
     }
 
-    return null;
+    return submitterSampleId;
   }
 
   private static String resolveTcgaParticipantBarcode(JsonNode caze) {
     return getAliquotSubmitterId(caze);
   }
 
-  private static String resolveTcgaAliquotBarcode(JsonNode caze) {
+  private static List<String> resolveTcgaAliquotBarcode(JsonNode caze) {
+    val tcgaAliquotBarcode = Lists.<String> newArrayList();
     for (val sample : getCaseSamples(caze)) {
-      // TODO: Arbitrary selection of one from many
-      return getSampleSubmitterId(sample);
+      tcgaAliquotBarcode.add(getSampleSubmitterId(sample));
     }
 
-    return null;
+    return tcgaAliquotBarcode;
   }
 
-  private static String resolveTcgaSampleBarcode(JsonNode caze) {
+  private static List<String> resolveTcgaSampleBarcode(JsonNode caze) {
+    val tcgaSampleBarcode = Lists.<String> newArrayList();
     for (val sample : getCaseSamples(caze)) {
       for (val portion : getSamplePortions(sample)) {
         for (val analyte : getPortionAnalytes(portion)) {
           for (val aliquot : getAnalyteAliquots(analyte)) {
-            // TODO: Arbitrary selection of one from many
-            return getAliquotSubmitterId(aliquot);
+            tcgaSampleBarcode.add(getAliquotSubmitterId(aliquot));
           }
         }
       }
     }
 
-    return null;
+    return tcgaSampleBarcode;
   }
 
 }

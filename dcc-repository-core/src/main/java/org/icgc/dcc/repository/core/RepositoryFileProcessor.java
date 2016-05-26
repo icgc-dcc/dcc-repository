@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.core;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.tcga.TCGAIdentifiers.isUUID;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
@@ -84,9 +85,11 @@ public abstract class RepositoryFileProcessor {
             .setDonorId(
                 submittedDonorId == null ? null : context.ensureDonorId(submittedDonorId, projectCode))
             .setSpecimenId(
-                submittedSpecimenId == null ? null : context.ensureSpecimenId(submittedSpecimenId, projectCode))
+                submittedSpecimenId == null ? null : submittedSpecimenId.stream()
+                    .map(s -> context.ensureSpecimenId(s, projectCode)).collect(toList()))
             .setSampleId(
-                submittedSampleId == null ? null : context.ensureSampleId(submittedSampleId, projectCode));
+                submittedSampleId == null ? null : submittedSampleId.stream()
+                    .map(s -> context.ensureSampleId(s, projectCode)).collect(toList()));
       }
     }
   }
@@ -99,8 +102,8 @@ public abstract class RepositoryFileProcessor {
     val barcodes = context.getTCGABarcodes(uuids);
     eachFileDonor(donorFiles, donor -> donor.getOtherIdentifiers()
         .setTcgaParticipantBarcode(barcodes.get(donor.getSubmittedDonorId()))
-        .setTcgaSampleBarcode(barcodes.get(donor.getSubmittedSpecimenId()))
-        .setTcgaAliquotBarcode(barcodes.get(donor.getSubmittedSampleId())));
+        .setTcgaSampleBarcode(donor.getSubmittedSpecimenId().stream().map(barcodes::get).collect(toList()))
+        .setTcgaAliquotBarcode(donor.getSubmittedSampleId().stream().map(barcodes::get).collect(toList())));
   }
 
   protected static Set<String> resolveTCGAUUIDs(Iterable<RepositoryFile> donorFiles) {
@@ -120,11 +123,15 @@ public abstract class RepositoryFileProcessor {
         if (isUUID(donorId)) {
           uuids.add(donorId);
         }
-        if (isUUID(specimenId)) {
-          uuids.add(specimenId);
+        for (val value : specimenId) {
+          if (isUUID(value)) {
+            uuids.add(value);
+          }
         }
-        if (isUUID(sampleId)) {
-          uuids.add(sampleId);
+        for (val value : sampleId) {
+          if (isUUID(value)) {
+            uuids.add(value);
+          }
         }
       }
     }
