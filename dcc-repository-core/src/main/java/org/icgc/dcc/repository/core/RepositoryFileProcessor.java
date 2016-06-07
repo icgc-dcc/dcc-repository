@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.core;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static java.util.Collections.emptyList;
 import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.tcga.TCGAIdentifiers.isUUID;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
@@ -26,18 +27,26 @@ import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.repository.core.model.RepositoryProjects.getTCGAProjects;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
+import org.icgc.dcc.common.core.meta.Resolver.CodeListsResolver;
+import org.icgc.dcc.common.core.meta.RestfulCodeListsResolver;
 import org.icgc.dcc.common.core.util.UUID5;
+import org.icgc.dcc.repository.core.meta.Entity;
+import org.icgc.dcc.repository.core.meta.MetadataClient;
+import org.icgc.dcc.repository.core.meta.MetadataService;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.model.RepositoryFile.Donor;
 import org.icgc.dcc.repository.core.model.RepositoryFile.Study;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 import lombok.NonNull;
@@ -54,6 +63,9 @@ public abstract class RepositoryFileProcessor {
    */
   @NonNull
   protected final RepositoryFileContext context;
+  private final MetadataService metadataService = new MetadataService(new MetadataClient());
+  private final CodeListsResolver codeListsResolver =
+      new RestfulCodeListsResolver("https://submissions.dcc.icgc.org/ws");
 
   protected void assignStudy(Iterable<RepositoryFile> files) {
     eachFileDonor(files, donor -> {
@@ -85,10 +97,10 @@ public abstract class RepositoryFileProcessor {
             .setDonorId(
                 submittedDonorId == null ? null : context.ensureDonorId(submittedDonorId, projectCode))
             .setSpecimenId(
-                submittedSpecimenId == null ? null : submittedSpecimenId.stream()
+                normalizeIds(submittedSpecimenId).stream()
                     .map(s -> context.ensureSpecimenId(s, projectCode)).collect(toList()))
             .setSampleId(
-                submittedSampleId == null ? null : submittedSampleId.stream()
+                normalizeIds(submittedSampleId).stream()
                     .map(s -> context.ensureSampleId(s, projectCode)).collect(toList()));
       }
     }
@@ -104,6 +116,29 @@ public abstract class RepositoryFileProcessor {
         .setTcgaParticipantBarcode(barcodes.get(donor.getSubmittedDonorId()))
         .setTcgaSampleBarcode(donor.getSubmittedSpecimenId().stream().map(barcodes::get).collect(toList()))
         .setTcgaAliquotBarcode(donor.getSubmittedSampleId().stream().map(barcodes::get).collect(toList())));
+  }
+
+  protected Optional<Entity> findEntity(@NonNull String objectId) {
+    return metadataService.getEntity(objectId);
+  }
+
+  protected Optional<Entity> findIndexEntity(@NonNull Entity entity) {
+    return metadataService.getIndexEntity(entity);
+  }
+
+  protected Optional<Entity> findXmlEntity(@NonNull Entity entity) {
+    return metadataService.getXmlEntity(entity);
+  }
+
+  protected Optional<ObjectNode> findCodeList(@NonNull String name) {
+    for (val codeList : codeListsResolver.get()) {
+      val currentName = codeList.get("name").textValue();
+      if (currentName.equals(name)) {
+        return Optional.of((ObjectNode) codeList);
+      }
+    }
+
+    return Optional.empty();
   }
 
   protected static Set<String> resolveTCGAUUIDs(Iterable<RepositoryFile> donorFiles) {
@@ -169,6 +204,19 @@ public abstract class RepositoryFileProcessor {
 
   protected static Set<String> resolveTCGAProjectCodes() {
     return stream(getTCGAProjects()).map(project -> project.getProjectCode()).collect(toImmutableSet());
+  }
+
+  private static List<String> normalizeIds(List<String> ids) {
+    if (ids == null) {
+      return emptyList();
+    }
+  
+    if (ids.contains(null)) {
+      ids = Lists.newArrayList(ids);
+      ids.remove(null);
+    }
+  
+    return ids;
   }
 
 }

@@ -27,7 +27,7 @@ import org.icgc.dcc.repository.cloud.core.CloudFileProcessor;
 import org.icgc.dcc.repository.cloud.s3.CloudS3BucketReader;
 import org.icgc.dcc.repository.cloud.transfer.CloudTransferJobReader;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.RepositoryServers;
+import org.icgc.dcc.repository.core.model.Repositories;
 
 import lombok.NonNull;
 import lombok.val;
@@ -63,8 +63,8 @@ public class AWSImporter extends CloudImporter {
 
   @Override
   protected CloudFileProcessor createFileProcessor() {
-    val awsServer = RepositoryServers.getAWSServer();
-    return new CloudFileProcessor(context, awsServer);
+    val awsRepository = Repositories.getAWSRepository();
+    return new CloudFileProcessor(context, awsRepository);
   }
 
 }

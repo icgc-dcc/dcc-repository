@@ -26,10 +26,10 @@ import org.junit.Test;
 
 import lombok.val;
 
+@Ignore("For development only")
 public class PCAWGImporterTest {
 
   @Test
-  @Ignore("For development only")
   public void testExecute() throws IOException {
     val context = newLocalRepositoryFileContext();
     val pcawgImporter = new PCAWGImporter(context);

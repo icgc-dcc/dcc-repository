@@ -32,6 +32,10 @@ public class Analysis {
   @NonNull
   String specimenClass;
 
+  public boolean isMiniBAM() {
+    return "minibam".equals(workflowType);
+  }
+
   public boolean isRNAAlignment() {
     return "rna_seq".equals(libraryStrategy) && ("star".equals(workflowType) || "tophat".equals(workflowType));
   }
@@ -42,6 +46,10 @@ public class Analysis {
 
   public boolean isVariantCalling() {
     return "wgs".equals(libraryStrategy) && workflowType.endsWith("_variant_calling");
+  }
+
+  public static AnalysisBuilder analysis() {
+    return builder();
   }
 
 }

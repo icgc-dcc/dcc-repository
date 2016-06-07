@@ -21,6 +21,7 @@ import static com.google.common.collect.Iterables.getFirst;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static com.google.common.collect.Ordering.natural;
 import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.repository.ega.pcawg.model.EGASubmission.submission;
 
@@ -40,13 +41,16 @@ import org.icgc.dcc.repository.ega.pcawg.model.EGAStudyFile;
 import org.icgc.dcc.repository.ega.pcawg.model.EGASubmission;
 
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimaps;
 import com.google.common.collect.TreeMultimap;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class EGASubmissionReader {
 
@@ -68,22 +72,39 @@ public class EGASubmissionReader {
   }
 
   private void updateMetadata() throws GitAPIException, IOException {
-    val repository = new TransferMetadataRepository(repoUrl, repoDir);
+    val repository = new TransferMetadataRepository(repoUrl, repoDir, true);
     repository.update();
   }
 
   private List<EGASubmission> createSubmissions() {
     // Read sources
+    log.info("Reading published files...");
     val publishedFiles = readPublishedFiles();
+    log.info("Read {} published files.", formatCount(publishedFiles));
+
+    log.info("Reading study files...");
     val studyFiles = readStudyFiles();
+    log.info("Read {} study files.", formatCount(studyFiles));
+
+    log.info("Reading sample files...");
     val sampleFiles = readSampleFiles();
+    log.info("Read {} sample files.", formatCount(sampleFiles));
+
+    log.info("Reading gnos files...");
     val gnosFiles = readGnosFiles();
+    log.info("Read {} gnos files.", formatCount(gnosFiles));
+
+    log.info("Reading analysis files...");
     val analysisFiles = readAnalysisFiles();
+    log.info("Read {} analysis files.", formatCount(analysisFiles));
+
+    log.info("Reading receipt files...");
     val receiptFiles = readReceiptFiles();
+    log.info("Read {} receipt files.", formatCount(receiptFiles));
 
     // Index sources for lookup in combine step
     val studyIndex = uniqueIndex(studyFiles, EGAStudyFile::getStudy);
-    val gnosIndex = uniqueIndex(gnosFiles, EGAGnosFile::getAnalysisId);
+    val gnosIndex = Multimaps.index(gnosFiles, EGAGnosFile::getAnalysisId);
 
     val sampleIndex = HashMultimap.<String, EGASampleFile> create();
     sampleFiles.forEach(f -> sampleIndex.put(f.getProjectId(), f));
@@ -97,7 +118,7 @@ public class EGASubmissionReader {
             .publishedFiles(publishedFiles)
             .studyFile(studyIndex.get(f.getStudy()))
             .sampleFiles(sampleIndex.get(f.getProjectId()))
-            .gnosFile(gnosIndex.get(f.getAnalysisId()))
+            .gnosFile(gnosIndex.get(f.getAnalysisId()).get(0))
             .receiptFile(getLatestReceipt(receiptIndex, f.getAnalysisId()))
             .analysisFile(f)
             .build())

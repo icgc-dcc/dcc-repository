@@ -56,18 +56,20 @@ import static org.icgc.dcc.repository.gdc.util.GDCProjects.getProjectCode;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
-import org.assertj.core.util.Lists;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositoryFileProcessor;
+import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.model.RepositoryFile.OtherIdentifiers;
 import org.icgc.dcc.repository.core.model.RepositoryFile.ReferenceGenome;
-import org.icgc.dcc.repository.core.model.RepositoryServers.RepositoryServer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 
 import lombok.NonNull;
 import lombok.val;
@@ -84,28 +86,29 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
   /**
    * Constants.
    */
-  private static final ReferenceGenome GDC_REFERENCE_GENOME = new ReferenceGenome()
-      .setGenomeBuild("GRCh38.p0")
-      .setReferenceName("GRCh38.d1.vd1");
+  private static final String SEQUENCING_STRATEGY_CODE_LIST_NAME = "GLOBAL.0.sequencing_strategy.v1";
+  private static final String EXCLUDED_EXPERIMENTAL_STRATEGY = "non-NGS";
 
   /**
    * Metadata.
    */
   @NonNull
-  private final RepositoryServer gdcServer;
+  private final Repository gdcRepository;
+  private final Set<String> experimentalStrategies;
 
   /**
    * State.
    */
   private int fileCount = 0;
 
-  public GDCFileProcessor(RepositoryFileContext context, @NonNull RepositoryServer gdcServer) {
+  public GDCFileProcessor(RepositoryFileContext context, @NonNull Repository gdcRepository) {
     super(context);
-    this.gdcServer = gdcServer;
+    this.gdcRepository = gdcRepository;
+    this.experimentalStrategies = resolveExperimentalStrategies();
   }
 
   public Stream<RepositoryFile> process(Stream<ObjectNode> files) {
-    return files.map(this::createFile).filter(file -> file != null);
+    return files.map(this::createFile).filter(this::isIncluded);
   }
 
   private RepositoryFile createFile(ObjectNode file) {
@@ -121,7 +124,7 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     val gdcFile = new RepositoryFile()
         .setId(context.ensureFileId(objectId))
         .setStudy(null) // N/A
-        .setObjectId(null); // N/A
+        .setObjectId(objectId);
 
     gdcFile.setAccess(getAccess(file));
 
@@ -130,14 +133,14 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
         .setAnalysisType(resolveAnalysisType(file));
 
     gdcFile.getDataCategorization()
-        .setExperimentalStrategy(getExperimentalStrategy(file))
+        .setExperimentalStrategy(resolveExperimentalStrategy(file, experimentalStrategies))
         .setDataType(dataType);
 
     val dataBundleId = resolveDataBundleId(file);
     gdcFile.getDataBundle()
         .setDataBundleId(dataBundleId);
 
-    gdcFile.setReferenceGenome(GDC_REFERENCE_GENOME);
+    gdcFile.setReferenceGenome(ReferenceGenome.GDC);
 
     val fileCopy = gdcFile.addFileCopy()
         .setRepoDataBundleId(dataBundleId)
@@ -148,21 +151,21 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
         .setFileName(getFileName(file))
         .setFileMd5sum(getMd5sum(file))
         .setLastModified(resolveLastModified(file))
-        .setRepoType(gdcServer.getType().getId())
-        .setRepoOrg(gdcServer.getSource().getId())
-        .setRepoName(gdcServer.getName())
-        .setRepoCode(gdcServer.getCode())
-        .setRepoCountry(gdcServer.getCountry())
-        .setRepoBaseUrl(gdcServer.getBaseUrl())
-        .setRepoMetadataPath(gdcServer.getType().getMetadataPath())
-        .setRepoDataPath(gdcServer.getType().getDataPath());
+        .setRepoType(gdcRepository.getType().getId())
+        .setRepoOrg(gdcRepository.getSource().getId())
+        .setRepoName(gdcRepository.getName())
+        .setRepoCode(gdcRepository.getCode())
+        .setRepoCountry(gdcRepository.getCountry())
+        .setRepoBaseUrl(gdcRepository.getBaseUrl())
+        .setRepoMetadataPath(gdcRepository.getType().getMetadataPath())
+        .setRepoDataPath(gdcRepository.getType().getDataPath());
 
     for (val indexFile : getIndexFiles(file)) {
       val indexFileId = getIndexFileId(indexFile);
       val indexObjectId = resolveObjectId(indexFileId);
       fileCopy.getIndexFile()
           .setId(context.ensureFileId(indexObjectId))
-          .setObjectId(null) // N/A
+          .setObjectId(indexObjectId)
           .setRepoFileId(indexFileId)
           .setFileName(getIndexFileName(indexFile))
           .setFileFormat(getIndexDataFormat(indexFile))
@@ -207,6 +210,30 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     return gdcFile;
   }
 
+  private boolean isIncluded(RepositoryFile file) {
+    if (file == null) {
+      return false;
+    }
+
+    // JJ: Experimental strategy must be matched to one of ICGC's 'sequencing_strategy' that is not Non-NGS
+    if (file.getDataCategorization().getExperimentalStrategy().equals(EXCLUDED_EXPERIMENTAL_STRATEGY)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  private Set<String> resolveExperimentalStrategies() {
+    val codeList = findCodeList(SEQUENCING_STRATEGY_CODE_LIST_NAME).get();
+
+    val values = ImmutableSet.<String> builder();
+    for (val term : codeList.path("terms")) {
+      values.add(term.get("value").textValue());
+    }
+
+    return values.build();
+  }
+
   private String resolvePrimarySite(JsonNode caze, String projectCode) {
     val primarySite = context.getPrimarySite(projectCode);
     if (primarySite != null) {
@@ -218,6 +245,17 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
 
   private static String resolveAnalysisType(@NonNull ObjectNode file) {
     return getAnalysisWorkflowType(file);
+  }
+
+  private static String resolveExperimentalStrategy(ObjectNode file, Set<String> values) {
+    val experimentalStrategy = getExperimentalStrategy(file);
+    for (val value : values) {
+      if (experimentalStrategy.equalsIgnoreCase(value)) {
+        return value;
+      }
+    }
+
+    return EXCLUDED_EXPERIMENTAL_STRATEGY;
   }
 
   private static String resolveDataBundleId(@NonNull ObjectNode file) {
@@ -234,7 +272,7 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     val dataType = getDataType(file);
 
     // Special cases
-    final String ignored = null, tbd = ignored, unexpected = dataCategory + " - " + dataType;
+    final String ignored = null, unexpected = null;
 
     // Output
     switch (dataCategory) {
@@ -258,6 +296,8 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
       case "Simple Germline Variation":
         return dataType;
       case "Aggregated Somatic Mutations":
+      case "Raw Simple Somatic Mutation":
+      case "Annotated Somatic Mutation":
         return "Simple Somatic Mutation";
       default:
         return unexpected;
@@ -273,36 +313,6 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
         return unexpected;
       }
 
-    case "Transcriptome Profiling":
-      switch (dataType) {
-      case "Gene Expression Quantifcation":
-      case "Exon Expression Quantification":
-      case "miRNA Expression Quantification":
-        return dataType;
-      default:
-        return unexpected;
-      }
-
-    case "Clinical":
-      switch (dataType) {
-      case "Clinical Supplement":
-        return "Clinical Data";
-      case "Pathology Report":
-        return dataType;
-      default:
-        return unexpected;
-      }
-
-    case "Biospecimen":
-      switch (dataType) {
-      case "Biospecimen Supplement":
-        return "Biospecimen Data";
-      case "Slide Image":
-        return dataType;
-      default:
-        return unexpected;
-      }
-
     case "Structural Rearrangement":
       switch (dataType) {
       case "Structural Somatic Rearrangement":
@@ -313,25 +323,12 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
         return unexpected;
       }
 
+    case "Transcriptome Profiling":
+    case "Clinical":
+    case "Biospecimen":
     case "DNA Methylation":
-      switch (dataType) {
-      case "Raw Intensity":
-      case "Probe Intensity":
-      case "CpG Beta Value":
-        return tbd;
-      default:
-        return unexpected;
-      }
-
     case "Protein Expression":
-      switch (dataType) {
-      case "Array Slide Image":
-      case "RPPA Slide Image Measurements":
-      case "Normalized Protein Expression":
-        return tbd;
-      default:
-        return unexpected;
-      }
+      return ignored;
 
     default:
       return unexpected;
