@@ -129,8 +129,8 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     gdcFile.setAccess(getAccess(file));
 
     gdcFile.getAnalysisMethod()
-        .setSoftware(null) // N/A
-        .setAnalysisType(resolveAnalysisType(file));
+        .setSoftware(resolveAnalysisSoftware(file))
+        .setAnalysisType(null); // N/A
 
     gdcFile.getDataCategorization()
         .setExperimentalStrategy(resolveExperimentalStrategy(file, experimentalStrategies))
@@ -188,7 +188,7 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
           .setDonorId(null) // Set downstream
           .setSpecimenId(null) // Set downstream
           .setSpecimenType(resolveSpecimenType(caze))
-          .setMatchedControlSampleId(null) // N/A
+          .setMatchedControlSampleId(resolveMatchedControlSampleId(caze))
           .setSampleId(null) // Set downstream
           .setSubmittedDonorId(resolveSubmittedDonorId(caze))
           .setSubmittedSpecimenId(resolveSubmitterSpecimenId(caze))
@@ -243,7 +243,7 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     return getCaseProjectPrimarySite(caze);
   }
 
-  private static String resolveAnalysisType(@NonNull ObjectNode file) {
+  private static String resolveAnalysisSoftware(@NonNull ObjectNode file) {
     return getAnalysisWorkflowType(file);
   }
 
@@ -367,6 +367,26 @@ public class GDCFileProcessor extends RepositoryFileProcessor {
     }
 
     return specimenType;
+  }
+
+  private static String resolveMatchedControlSampleId(JsonNode caze) {
+    for (val sample : getCaseSamples(caze)) {
+      val sampleType = getCaseSampleType(sample);
+      val matched = sampleType.toLowerCase().contains("normal");
+      if (matched) {
+        for (val portion : getSamplePortions(sample)) {
+          for (val analyte : getPortionAnalytes(portion)) {
+            for (val aliquot : getAnalyteAliquots(analyte)) {
+              // JJ: at the inner most level, the aliquot should be just one so return first one should be safe. this is
+              // because, one VCF can only associate with one tumour aliquot (or one normal aliquot)
+              return getAliquotId(aliquot);
+            }
+          }
+        }
+      }
+    }
+
+    return null;
   }
 
   private static List<String> resolveSubmitterSampleId(JsonNode caze) {
