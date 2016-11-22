@@ -17,8 +17,8 @@
  */
 package org.icgc.dcc.repository.index.document;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.icgc.dcc.repository.index.model.Document;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
@@ -26,16 +26,16 @@ import com.mongodb.MongoClientURI;
 
 public class FileCentricDocumentProcessor extends DocumentProcessor {
 
-  public FileCentricDocumentProcessor(MongoClientURI mongoUri, String indexName, BulkProcessor processor,
+  public FileCentricDocumentProcessor(MongoClientURI mongoUri, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
-    super(mongoUri, indexName, DocumentType.FILE_CENTRIC, processor, archiveWriter);
+    super(mongoUri, () -> DocumentType.FILE_CENTRIC.getId(), documentWriter, archiveWriter);
   }
 
   @Override
   public int process() {
     return eachFile(file -> {
       String id = getId(file);
-      Document document = createDocument(id, file);
+      IndexDocument document = createDocument(id, file);
 
       addDocument(document);
     });

@@ -22,8 +22,8 @@ import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 import java.util.List;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.icgc.dcc.repository.index.model.Document;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
@@ -34,9 +34,9 @@ import lombok.val;
 
 public class FileTextDocumentProcessor extends DocumentProcessor {
 
-  public FileTextDocumentProcessor(MongoClientURI mongoUri, String indexName, BulkProcessor processor,
+  public FileTextDocumentProcessor(MongoClientURI mongoUri, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
-    super(mongoUri, indexName, DocumentType.FILE_TEXT, processor, archiveWriter);
+    super(mongoUri, () -> DocumentType.FILE_TEXT.getId(), documentWriter, archiveWriter);
   }
 
   @Override
@@ -51,7 +51,7 @@ public class FileTextDocumentProcessor extends DocumentProcessor {
     addDocument(document);
   }
 
-  private Document createFileText(ObjectNode file, String id) {
+  private IndexDocument createFileText(ObjectNode file, String id) {
     val document = createDocument(id);
 
     val fileText = document.getSource();
