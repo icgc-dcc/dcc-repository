@@ -1,6 +1,4 @@
 {
-  "index.store.compress.stored":true,
-  "index.store.compress.tv":true,
   "index.number_of_shards" : 15,
   "analysis":{
     "analyzer":{
