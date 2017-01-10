@@ -109,16 +109,18 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>log4j-over-slf4j</artifactId>
+      
+    <!-- Logging dependency for Elasticsearch -->
     </dependency>
         <dependency>
     	<groupId>org.apache.logging.log4j</groupId>
     	<artifactId>log4j-api</artifactId>
-    	<version>2.6.2</version>
+    	<version>${log4j.version}</version><!--$NO-MVN-MAN-VER$-->
     </dependency>
         <dependency>
     	<groupId>org.apache.logging.log4j</groupId>
     	<artifactId>log4j-core</artifactId>
-    	<version>2.6.2</version>
+    	<version>${log4j.version}</version><!--$NO-MVN-MAN-VER$-->
     </dependency>
 
     <!-- Validation -->
@@ -182,6 +184,9 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <!-- Spring -->
     <main.class>org.icgc.dcc.repository.client.ClientMain</main.class>
     <start-class>${main.class}</start-class>
+
+	<!-- Logged needed for Elasticsearch -->
+	<log4j.version>2.6.2</log4j.version>
 
     <!-- Versions - Spring -->
     <spring-boot.version>1.2.5.RELEASE</spring-boot.version>
