@@ -22,6 +22,7 @@ import static com.google.common.io.Files.getNameWithoutExtension;
 import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 import static java.util.Collections.singletonList;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
+import static org.icgc.dcc.common.core.util.function.Predicates.isNotNull;
 import static org.icgc.dcc.common.ega.core.EGAAnalyses.getAnalysisChecksum;
 import static org.icgc.dcc.common.ega.core.EGAAnalyses.getAnalysisFile;
 import static org.icgc.dcc.common.ega.core.EGAAnalyses.getAnalysisFileName;
@@ -41,7 +42,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 
-import org.icgc.dcc.common.ega.model.EGAMetadata;
+import org.icgc.dcc.common.ega.dump.EGADatasetDump;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositoryFileProcessor;
 import org.icgc.dcc.repository.core.model.Repository;
@@ -76,23 +77,23 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     this.egaRepository = egaRepository;
   }
 
-  public Stream<RepositoryFile> process(Stream<EGAMetadata> metadata) {
-    return metadata.flatMap(this::createFiles);
+  public Stream<RepositoryFile> process(Stream<EGADatasetDump> datasets) {
+    return datasets.flatMap(this::createFiles);
   }
 
-  private Stream<RepositoryFile> createFiles(EGAMetadata metadata) {
-    log.info("Processing dataset {}", metadata.getDatasetId());
-    return metadata.getFiles().stream().map(file -> createFile(metadata, file)).filter(file -> file != null);
+  private Stream<RepositoryFile> createFiles(EGADatasetDump dataset) {
+    log.info("Processing dataset {}", dataset.getDatasetId());
+    return dataset.getFiles().stream().map(file -> createFile(dataset, file)).filter(isNotNull());
   }
 
-  private RepositoryFile createFile(EGAMetadata metadata, ObjectNode file) {
+  private RepositoryFile createFile(EGADatasetDump dataset, ObjectNode file) {
     val egaFile = new RepositoryFile();
 
     egaFile.getDataBundle()
-        .setDataBundleId(metadata.getDatasetId());
+        .setDataBundleId(dataset.getDatasetId());
 
     val fileCopy = egaFile.addFileCopy()
-        .setRepoDataBundleId(metadata.getDatasetId())
+        .setRepoDataBundleId(dataset.getDatasetId())
         .setRepoFileId(getMappingFileId(file))
         .setRepoDataSetId(getMappingDataSetId(file))
         .setFileSize(getMappingFileSize(file))
@@ -106,7 +107,7 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
         .setRepoMetadataPath(egaRepository.getType().getMetadataPath())
         .setRepoDataPath(egaRepository.getType().getDataPath());
 
-    updateFileCopy(fileCopy, getMappingFileName(file), metadata);
+    updateFileCopy(fileCopy, getMappingFileName(file), dataset);
 
     if (fileCopy.getFileName() == null) {
       return null;
@@ -115,8 +116,8 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     // TODO: Filter if not in DCC
 
     egaFile.addDonor()
-        .setProjectCode(getFirst(metadata.getProjectCodes(), null))
-        .setSubmittedSampleId(singletonList(resolveSubmittedSampleId(metadata, fileCopy.getRepoFileId())));
+        .setProjectCode(getFirst(dataset.getProjectCodes(), null))
+        .setSubmittedSampleId(singletonList(resolveSubmittedSampleId(dataset, fileCopy.getRepoFileId())));
 
     if (++fileCount % 1000 == 0) {
       log.info("Processed {} files", formatCount(fileCount));
@@ -125,11 +126,11 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     return egaFile;
   }
 
-  private void updateFileCopy(FileCopy fileCopy, String fileName, EGAMetadata metadata) {
+  private void updateFileCopy(FileCopy fileCopy, String fileName, EGADatasetDump dataset) {
     // First try runs
     val runFileNames = Sets.<String> newHashSet();
     {
-      val runs = metadata.getMetadata().getRuns().values();
+      val runs = dataset.getMetadata().getRuns().values();
       for (val run : runs) {
         val files = resolveRunFiles(run);
 
@@ -154,7 +155,7 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     // Next try analysis
     val analysisFileNames = Sets.<String> newHashSet();
     {
-      val analyses = metadata.getMetadata().getAnalysis().values();
+      val analyses = dataset.getMetadata().getAnalysis().values();
       for (val analysis : analyses) {
         val files = resolveAnalysisFiles(analysis);
 
@@ -177,7 +178,7 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     }
 
     log.warn("No match for file {} in dataset {} (array-based?: {}) with run file names: {}, analysis file names: {}",
-        fileName, metadata.getDatasetId(), isArrayBased(metadata.getDatasetId()), runFileNames, analysisFileNames);
+        fileName, dataset.getDatasetId(), isArrayBased(dataset.getDatasetId()), runFileNames, analysisFileNames);
   }
 
   private static String resolveFileFormat(String fileType) {
@@ -223,9 +224,9 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
     return values.isArray() ? values : singletonList(values);
   }
 
-  private static String resolveSubmittedSampleId(EGAMetadata metadata, String repoFileId) {
+  private static String resolveSubmittedSampleId(EGADatasetDump dataset, String repoFileId) {
     try {
-      return metadata
+      return dataset
           .getMetadata()
           .getMappings()
           .get("Sample_File").stream()
@@ -233,7 +234,7 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
           .findFirst().get()
           .path("SAMPLE_ALIAS").textValue();
     } catch (Exception e) {
-      log.warn("Could not resolve submitted sample id for file {} in dataset {}", repoFileId, metadata.getDatasetId());
+      log.warn("Could not resolve submitted sample id for file {} in dataset {}", repoFileId, dataset.getDatasetId());
       return null;
     }
   }

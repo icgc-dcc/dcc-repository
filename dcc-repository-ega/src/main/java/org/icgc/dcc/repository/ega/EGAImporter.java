@@ -23,9 +23,11 @@ import static org.icgc.dcc.repository.core.model.RepositorySource.EGA;
 
 import java.util.stream.Stream;
 
-import org.icgc.dcc.common.ega.client.EGAClient;
-import org.icgc.dcc.common.ega.model.EGAMetadata;
-import org.icgc.dcc.common.ega.reader.EGAMetadataReader;
+import org.icgc.dcc.common.ega.client.EGAAPIClient;
+import org.icgc.dcc.common.ega.client.EGAFTPClient;
+import org.icgc.dcc.common.ega.dataset.EGADatasetMetaArchiveResolver;
+import org.icgc.dcc.common.ega.dataset.EGADatasetMetaReader;
+import org.icgc.dcc.common.ega.dump.EGADatasetDump;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.util.GenericRepositorySourceFileImporter;
@@ -48,28 +50,28 @@ public class EGAImporter extends GenericRepositorySourceFileImporter {
   @Override
   @SneakyThrows
   protected Iterable<RepositoryFile> readFiles() {
-    val client = createEGAClient();
-    val metadata = readMetadata(client);
-    val files = processFiles(metadata);
+    val api = createAPIClient();
+    val ftp = createFTPClient();
+    val datasets = readDatasets(api, ftp);
+    val files = processFiles(datasets);
 
     return files.collect(toList());
   }
 
-  private Stream<EGAMetadata> readMetadata(EGAClient client) {
-    return new EGAMetadataReader(client).readMetadata();
+  private Stream<EGADatasetDump> readDatasets(EGAAPIClient api, EGAFTPClient ftp) {
+    return new EGADatasetMetaReader(api, new EGADatasetMetaArchiveResolver(api, ftp)).readDatasets();
   }
 
-  private Stream<RepositoryFile> processFiles(Stream<EGAMetadata> metadata) {
-    return new EGAFileProcessor(context, getEGARepository()).process(metadata);
+  private Stream<RepositoryFile> processFiles(Stream<EGADatasetDump> datasets) {
+    return new EGAFileProcessor(context, getEGARepository()).process(datasets);
   }
 
-  private EGAClient createEGAClient() {
-    val userName = System.getProperty("ega.username");
-    val password = System.getProperty("ega.password");
-    val client = new EGAClient(userName, password);
+  private EGAAPIClient createAPIClient() {
+    return new EGAAPIClient().login();
+  }
 
-    client.login();
-    return client;
+  public EGAFTPClient createFTPClient() {
+    return new EGAFTPClient();
   }
 
 }

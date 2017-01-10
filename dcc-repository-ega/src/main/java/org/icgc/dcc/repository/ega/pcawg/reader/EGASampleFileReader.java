@@ -41,7 +41,7 @@ public class EGASampleFileReader extends EGAFileReader<EGASampleFile> {
       + "\\."
       + "([^.]+)" // [type]
       + "_"
-      + "([^.]+)" // [timestamp]
+      + "(\\d+)" // [timestamp]
       + "\\.xml");
 
   public EGASampleFileReader(File repoDir) {
@@ -50,12 +50,16 @@ public class EGASampleFileReader extends EGAFileReader<EGASampleFile> {
 
   @Override
   protected EGASampleFile createFile(Path path, Matcher matcher) {
-    return sampleFile()
-        .projectId(matcher.group(1))
-        .type(matcher.group(2))
-        .timestamp(Long.parseLong(matcher.group(3)))
-        .contents(readFile(path))
-        .build();
+    try {
+      return sampleFile()
+          .projectId(matcher.group(1))
+          .type(matcher.group(2))
+          .timestamp(Long.parseLong(matcher.group(3)))
+          .contents(readFile(path))
+          .build();
+    } catch (Exception e) {
+      throw new IllegalStateException("Could not parse groups from path: " + path.toString(), e);
+    }
   }
 
 }
