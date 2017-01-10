@@ -80,7 +80,7 @@ public class CGHubFileProcessor extends RepositoryFileProcessor {
     log.info("Procesing and filtering details...");
     val analysisFiles = stream(details)
         .flatMap(detail -> stream(getResults(detail)))
-        .flatMap(result -> stream(processResult(result)))
+        .flatMap(result -> (Stream<RepositoryFile>) stream(processResult(result)))
         .filter(hasDonorId()) // Filter out non-ICGC donors
         .collect(toImmutableList());
 
