@@ -27,6 +27,7 @@ import org.icgc.dcc.repository.index.model.Document;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mongodb.MongoClientURI;
 
@@ -64,12 +65,24 @@ public class FileTextDocumentProcessor extends DocumentProcessor {
     fileText.putPOJO("donor_id", arrayTextValues(file, "donors", "donor_id"));
     fileText.putPOJO("project_code", arrayTextValues(file, "donors", "project_code"));
     fileText.put("data_bundle_id", file.path("data_bundle").path("data_bundle_id").textValue());
+    fileText.putPOJO("sample_id", arrayTextValuesFlatten(file, "donors", "sample_id"));
+    fileText.putPOJO("specimen_id", arrayTextValuesFlatten(file, "donors", "specimen_id"));
+    fileText.putPOJO("submitted_specimen_id", arrayTextValuesFlatten(file, "donors", "submitted_specimen_id"));
+    fileText.putPOJO("submitted_sample_id", arrayTextValuesFlatten(file, "donors", "submitted_sample_id"));
 
     return document;
   }
 
   private static List<String> arrayTextValues(ObjectNode objectNode, String arrayPath, String fileName) {
     return stream(objectNode.path(arrayPath)).map(element -> element.path(fileName).textValue()).collect(toList());
+  }
+
+  private List<String> arrayTextValuesFlatten(ObjectNode objectNode, String firstPath, String secondPath) {
+    return stream(objectNode.path(firstPath))
+        .map(e -> (ArrayNode) e.path(secondPath))
+        .flatMap(e -> stream(e))
+        .map(e -> e.asText())
+        .collect(toList());
   }
 
 }
