@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.index.document;
 
 import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 import java.util.List;
@@ -54,17 +55,17 @@ public class FileTextDocumentProcessor extends DocumentProcessor {
   private IndexDocument createFileText(ObjectNode file, String id) {
     val document = createDocument(id);
 
-    val fileText = document.getSource();
-    fileText.put("type", "file");
+    val text = DEFAULT.createObjectNode();
+    text.put("type", "file");
+    text.put("id", id);
+    text.put("object_id", file.path("object_id").textValue());
+    text.putPOJO("file_name", arrayTextValues(file, "file_copies", "file_name"));
+    text.put("data_type", file.path("data_categorization").path("data_type").textValue());
+    text.putPOJO("donor_id", arrayTextValues(file, "donors", "donor_id"));
+    text.putPOJO("project_code", arrayTextValues(file, "donors", "project_code"));
+    text.put("data_bundle_id", file.path("data_bundle").path("data_bundle_id").textValue());
 
-    fileText.put("id", id);
-    fileText.put("object_id", file.path("object_id").textValue());
-    fileText.putPOJO("file_name", arrayTextValues(file, "file_copies", "file_name"));
-    fileText.put("data_type", file.path("data_categorization").path("data_type").textValue());
-    fileText.putPOJO("donor_id", arrayTextValues(file, "donors", "donor_id"));
-    fileText.putPOJO("project_code", arrayTextValues(file, "donors", "project_code"));
-    fileText.put("data_bundle_id", file.path("data_bundle").path("data_bundle_id").textValue());
-
+    document.getSource().put("text", text);
     return document;
   }
 

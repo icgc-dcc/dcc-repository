@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.index.document;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.List;
 import java.util.Map;
@@ -108,7 +109,7 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
   private IndexDocument createFileDonor(FileDonorSummary summary, String donorId) {
     val document = createDocument(donorId);
 
-    val fileDonor = document.getSource();
+    val fileDonor = DEFAULT.createObjectNode();
     fileDonor.put("id", donorId);
     fileDonor.put("type", "donor");
     fileDonor.put("donor_id", donorId);
@@ -122,6 +123,7 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
       fileDonor.putPOJO(fieldName, summary.donorFields().get(fieldName).get(donorId));
     }
 
+    document.getSource().put("text", "fileDonor");
     return document;
   }
 
