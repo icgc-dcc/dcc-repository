@@ -32,12 +32,18 @@
       }
     ],
     "properties": {
-      "donor_id": {
-        "type": "keyword"
-      },
-      "type": {
-        "type": "keyword"
-      }
+    	"text": {
+    		"properties": {
+    			"donor_id": {
+		        	"type": "keyword",
+		        	"index": "not_analyzed"
+		      	},
+		      	"type": {
+		        	"type": "keyword",
+		        	"index": "not_analyzed"
+		      	}
+    		}
+    	}
     }
   }
 }

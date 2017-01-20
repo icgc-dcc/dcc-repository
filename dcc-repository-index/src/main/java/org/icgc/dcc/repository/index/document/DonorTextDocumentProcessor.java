@@ -123,7 +123,7 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
       fileDonor.putPOJO(fieldName, summary.donorFields().get(fieldName).get(donorId));
     }
 
-    document.getSource().put("text", "fileDonor");
+    document.getSource().put("text", fileDonor);
     return document;
   }
 
