@@ -18,13 +18,14 @@
 package org.icgc.dcc.repository.index.document;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.icgc.dcc.repository.index.model.Document;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
@@ -55,9 +56,9 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
       "tcga_sample_barcode",
       "tcga_aliquot_barcode");
 
-  public DonorTextDocumentProcessor(MongoClientURI mongoUri, String indexName, BulkProcessor bulkProcessor,
+  public DonorTextDocumentProcessor(MongoClientURI mongoUri, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
-    super(mongoUri, indexName, DocumentType.DONOR_TEXT, bulkProcessor, archiveWriter);
+    super(mongoUri, () -> DocumentType.DONOR_TEXT.getId(), documentWriter, archiveWriter);
   }
 
   @Override
@@ -105,10 +106,10 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
     }
   }
 
-  private Document createFileDonor(FileDonorSummary summary, String donorId) {
+  private IndexDocument createFileDonor(FileDonorSummary summary, String donorId) {
     val document = createDocument(donorId);
 
-    val fileDonor = document.getSource();
+    val fileDonor = DEFAULT.createObjectNode();
     fileDonor.put("id", donorId);
     fileDonor.put("type", "donor");
     fileDonor.put("donor_id", donorId);
@@ -122,6 +123,7 @@ public class DonorTextDocumentProcessor extends DocumentProcessor {
       fileDonor.putPOJO(fieldName, summary.donorFields().get(fieldName).get(donorId));
     }
 
+    document.getSource().put("text", fileDonor);
     return document;
   }
 

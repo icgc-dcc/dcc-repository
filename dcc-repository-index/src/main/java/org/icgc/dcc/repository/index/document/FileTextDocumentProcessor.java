@@ -18,12 +18,13 @@
 package org.icgc.dcc.repository.index.document;
 
 import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 
 import java.util.List;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.icgc.dcc.repository.index.model.Document;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
@@ -35,9 +36,9 @@ import lombok.val;
 
 public class FileTextDocumentProcessor extends DocumentProcessor {
 
-  public FileTextDocumentProcessor(MongoClientURI mongoUri, String indexName, BulkProcessor processor,
+  public FileTextDocumentProcessor(MongoClientURI mongoUri, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
-    super(mongoUri, indexName, DocumentType.FILE_TEXT, processor, archiveWriter);
+    super(mongoUri, () -> DocumentType.FILE_TEXT.getId(), documentWriter, archiveWriter);
   }
 
   @Override
@@ -52,24 +53,24 @@ public class FileTextDocumentProcessor extends DocumentProcessor {
     addDocument(document);
   }
 
-  private Document createFileText(ObjectNode file, String id) {
+  private IndexDocument createFileText(ObjectNode file, String id) {
     val document = createDocument(id);
 
-    val fileText = document.getSource();
-    fileText.put("type", "file");
+    val text = DEFAULT.createObjectNode();
+    text.put("type", "file");
+    text.put("id", id);
+    text.put("object_id", file.path("object_id").textValue());
+    text.putPOJO("file_name", arrayTextValues(file, "file_copies", "file_name"));
+    text.put("data_type", file.path("data_categorization").path("data_type").textValue());
+    text.putPOJO("donor_id", arrayTextValues(file, "donors", "donor_id"));
+    text.putPOJO("project_code", arrayTextValues(file, "donors", "project_code"));
+    text.put("data_bundle_id", file.path("data_bundle").path("data_bundle_id").textValue());
+    text.putPOJO("sample_id", arrayTextValuesFlatten(file, "donors", "sample_id"));
+    text.putPOJO("specimen_id", arrayTextValuesFlatten(file, "donors", "specimen_id"));
+    text.putPOJO("submitted_specimen_id", arrayTextValuesFlatten(file, "donors", "submitted_specimen_id"));
+    text.putPOJO("submitted_sample_id", arrayTextValuesFlatten(file, "donors", "submitted_sample_id"));
 
-    fileText.put("id", id);
-    fileText.put("object_id", file.path("object_id").textValue());
-    fileText.putPOJO("file_name", arrayTextValues(file, "file_copies", "file_name"));
-    fileText.put("data_type", file.path("data_categorization").path("data_type").textValue());
-    fileText.putPOJO("donor_id", arrayTextValues(file, "donors", "donor_id"));
-    fileText.putPOJO("project_code", arrayTextValues(file, "donors", "project_code"));
-    fileText.put("data_bundle_id", file.path("data_bundle").path("data_bundle_id").textValue());
-    fileText.putPOJO("sample_id", arrayTextValuesFlatten(file, "donors", "sample_id"));
-    fileText.putPOJO("specimen_id", arrayTextValuesFlatten(file, "donors", "specimen_id"));
-    fileText.putPOJO("submitted_specimen_id", arrayTextValuesFlatten(file, "donors", "submitted_specimen_id"));
-    fileText.putPOJO("submitted_sample_id", arrayTextValuesFlatten(file, "donors", "submitted_sample_id"));
-
+    document.getSource().put("text", text);
     return document;
   }
 

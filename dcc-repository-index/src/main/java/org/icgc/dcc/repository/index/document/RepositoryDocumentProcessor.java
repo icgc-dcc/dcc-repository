@@ -21,11 +21,11 @@ import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.array;
 import static org.icgc.dcc.common.core.json.JsonNodeBuilders.object;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryAccess;
-import org.icgc.dcc.repository.index.model.Document;
 import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
@@ -35,9 +35,9 @@ import lombok.val;
 
 public class RepositoryDocumentProcessor extends DocumentProcessor {
 
-  public RepositoryDocumentProcessor(MongoClientURI mongoUri, String indexName, BulkProcessor processor,
+  public RepositoryDocumentProcessor(MongoClientURI mongoUri, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
-    super(mongoUri, indexName, DocumentType.REPOSITORY, processor, archiveWriter);
+    super(mongoUri, () -> DocumentType.REPOSITORY.getId(), documentWriter, archiveWriter);
   }
 
   @Override
@@ -53,7 +53,7 @@ public class RepositoryDocumentProcessor extends DocumentProcessor {
     return count;
   }
 
-  private Document createDocument(Repository repository) {
+  private IndexDocument createDocument(Repository repository) {
     return createDocument(
         repository.getCode(),
         object()

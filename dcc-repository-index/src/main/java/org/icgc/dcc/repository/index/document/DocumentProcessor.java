@@ -17,16 +17,15 @@
  */
 package org.icgc.dcc.repository.index.document;
 
-import static org.elasticsearch.client.Requests.indexRequest;
 import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import java.util.function.Consumer;
 
-import org.elasticsearch.action.bulk.BulkProcessor;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
+import org.icgc.dcc.dcc.common.es.impl.IndexDocumentType;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.core.model.RepositoryCollection;
 import org.icgc.dcc.repository.core.util.AbstractJongoComponent;
-import org.icgc.dcc.repository.index.model.Document;
-import org.icgc.dcc.repository.index.model.DocumentType;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -44,25 +43,22 @@ public abstract class DocumentProcessor extends AbstractJongoComponent {
    * Configuration.
    */
   @NonNull
-  private final String indexName;
-  @NonNull
-  private final DocumentType type;
+  private final IndexDocumentType indexType;
 
   /**
    * Dependencies.
    */
   @NonNull
-  private final BulkProcessor bulkProcessor;
-  @NonNull
   private final TarArchiveDocumentWriter archiveWriter;
+  @NonNull
+  private final DocumentWriter documentWriter;
 
-  public DocumentProcessor(MongoClientURI mongoUri, String indexName, DocumentType type, BulkProcessor processor,
+  public DocumentProcessor(MongoClientURI mongoUri, IndexDocumentType type, DocumentWriter documentWriter,
       TarArchiveDocumentWriter archiveWriter) {
     super(mongoUri);
-    this.bulkProcessor = processor;
+    this.documentWriter = documentWriter;
     this.archiveWriter = archiveWriter;
-    this.indexName = indexName;
-    this.type = type;
+    this.indexType = type;
   }
 
   abstract public int process();
@@ -71,26 +67,21 @@ public abstract class DocumentProcessor extends AbstractJongoComponent {
     return eachDocument(RepositoryCollection.FILE, consumer);
   }
 
-  protected Document createDocument(@NonNull String id) {
+  protected IndexDocument createDocument(@NonNull String id) {
     return createDocument(id, DEFAULT.createObjectNode());
   }
 
-  protected Document createDocument(@NonNull String id, @NonNull ObjectNode source) {
-    return new Document(type, id, source);
+  protected IndexDocument createDocument(@NonNull String id, @NonNull ObjectNode source) {
+    return new IndexDocument(id, source, indexType);
   }
 
   @SneakyThrows
-  protected void addDocument(Document document) {
+  protected void addDocument(IndexDocument document) {
     // Need to remove this as to not conflict with Elasticsearch
     val source = document.getSource();
     source.remove("_id");
 
-    bulkProcessor.add(
-        indexRequest(indexName)
-            .type(type.getId())
-            .id(document.getId())
-            .source(serializeDocument(source)));
-
+    documentWriter.write(document);
     archiveWriter.write(document);
   }
 
@@ -108,11 +99,6 @@ public abstract class DocumentProcessor extends AbstractJongoComponent {
 
   protected static String getSubmittedDonorId(JsonNode donor) {
     return donor.get("submitted_donor_id").textValue();
-  }
-
-  @SneakyThrows
-  private static String serializeDocument(JsonNode document) {
-    return DEFAULT.writeValueAsString(document);
   }
 
 }

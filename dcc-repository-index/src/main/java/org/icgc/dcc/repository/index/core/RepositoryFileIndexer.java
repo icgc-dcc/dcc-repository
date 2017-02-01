@@ -23,12 +23,12 @@ import static com.google.common.base.Throwables.propagate;
 import static org.icgc.dcc.common.core.util.Formats.formatCount;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
+import static org.icgc.dcc.dcc.common.es.TransportClientFactory.createClient;
 import static org.icgc.dcc.repository.index.core.RepositoryFileIndexes.compareIndexDateDescending;
 import static org.icgc.dcc.repository.index.core.RepositoryFileIndexes.getCurrentIndexName;
 import static org.icgc.dcc.repository.index.core.RepositoryFileIndexes.getSettings;
 import static org.icgc.dcc.repository.index.core.RepositoryFileIndexes.getTypeMapping;
 import static org.icgc.dcc.repository.index.core.RepositoryFileIndexes.isRepoIndexName;
-import static org.icgc.dcc.repository.index.util.TransportClientFactory.newTransportClient;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -40,14 +40,15 @@ import java.util.zip.GZIPOutputStream;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
-import org.elasticsearch.action.bulk.BulkProcessor;
-import org.elasticsearch.client.transport.TransportClient;
+import org.elasticsearch.client.Client;
+import org.icgc.dcc.dcc.common.es.DocumentWriterConfiguration;
+import org.icgc.dcc.dcc.common.es.DocumentWriterFactory;
+import org.icgc.dcc.dcc.common.es.core.DocumentWriter;
 import org.icgc.dcc.repository.index.document.DonorTextDocumentProcessor;
 import org.icgc.dcc.repository.index.document.FileCentricDocumentProcessor;
 import org.icgc.dcc.repository.index.document.FileTextDocumentProcessor;
 import org.icgc.dcc.repository.index.document.RepositoryDocumentProcessor;
 import org.icgc.dcc.repository.index.model.DocumentType;
-import org.icgc.dcc.repository.index.util.LoggingBulkListener;
 import org.icgc.dcc.repository.index.util.TarArchiveDocumentWriter;
 
 import com.mongodb.MongoClientURI;
@@ -77,7 +78,8 @@ public class RepositoryFileIndexer implements Closeable {
    * Dependencies.
    */
   @NonNull
-  private final TransportClient client;
+  private final Client client;
+  private final DocumentWriter documentWriter;
 
   public RepositoryFileIndexer(@NonNull MongoClientURI mongoUri, @NonNull URI esUri, URI archiveUri,
       String indexAlias) {
@@ -85,7 +87,8 @@ public class RepositoryFileIndexer implements Closeable {
     this.archiveUri = archiveUri;
     this.indexAlias = indexAlias;
     this.indexName = getCurrentIndexName(indexAlias);
-    this.client = newTransportClient(esUri);
+    this.client = createClient(esUri.toString());
+    this.documentWriter = createDocumentWriter(this.client, this.indexName);
   }
 
   public void indexFiles() {
@@ -97,6 +100,7 @@ public class RepositoryFileIndexer implements Closeable {
 
   @Override
   public void close() throws IOException {
+    documentWriter.close();
     client.close();
   }
 
@@ -151,18 +155,16 @@ public class RepositoryFileIndexer implements Closeable {
     val watch = createStarted();
 
     @Cleanup
-    val bulkProcessor = createBulkProcessor();
-    @Cleanup
     val archiveWriter = createArchiveWriter();
 
     log.info("Indexing repository documents...");
-    val repositoryCount = indexRepositoryDocuments(bulkProcessor, archiveWriter);
+    val repositoryCount = indexRepositoryDocuments(archiveWriter);
     log.info("Indexing file documents...");
-    val fileCount = indexFileDocuments(bulkProcessor, archiveWriter);
+    val fileCount = indexFileDocuments(archiveWriter);
     log.info("Indexing file text documents...");
-    val fileTextCount = indexFileTextDocuments(bulkProcessor, archiveWriter);
+    val fileTextCount = indexFileTextDocuments(archiveWriter);
     log.info("Indexing file donor documents...");
-    val fileDonorCount = indexFileDonorDocuments(bulkProcessor, archiveWriter);
+    val fileDonorCount = indexFileDonorDocuments(archiveWriter);
 
     log.info("Finished indexing {}, repository, {} file, {} file text and {} file donor documents in {}",
         formatCount(repositoryCount), formatCount(fileCount), formatCount(fileTextCount), formatCount(fileDonorCount),
@@ -170,35 +172,31 @@ public class RepositoryFileIndexer implements Closeable {
   }
 
   @SneakyThrows
-  private int indexRepositoryDocuments(BulkProcessor bulkProcessor, TarArchiveDocumentWriter archiveWriter) {
+  private int indexRepositoryDocuments(TarArchiveDocumentWriter archiveWriter) {
     @Cleanup
-    val processor = new RepositoryDocumentProcessor(mongoUri, indexName, bulkProcessor, archiveWriter);
+    val processor = new RepositoryDocumentProcessor(mongoUri, documentWriter, archiveWriter);
     return processor.process();
   }
 
   @SneakyThrows
-  private int indexFileDocuments(BulkProcessor bulkProcessor, TarArchiveDocumentWriter archiveWriter) {
+  private int indexFileDocuments(TarArchiveDocumentWriter archiveWriter) {
     @Cleanup
-    val processor = new FileCentricDocumentProcessor(mongoUri, indexName, bulkProcessor, archiveWriter);
+    val processor = new FileCentricDocumentProcessor(mongoUri, documentWriter, archiveWriter);
     return processor.process();
   }
 
   @SneakyThrows
-  private int indexFileTextDocuments(BulkProcessor bulkProcessor, TarArchiveDocumentWriter archiveWriter) {
+  private int indexFileTextDocuments(TarArchiveDocumentWriter archiveWriter) {
     @Cleanup
-    val processor = new FileTextDocumentProcessor(mongoUri, indexName, bulkProcessor, archiveWriter);
+    val processor = new FileTextDocumentProcessor(mongoUri, documentWriter, archiveWriter);
     return processor.process();
   }
 
   @SneakyThrows
-  private int indexFileDonorDocuments(BulkProcessor bulkProcessor, TarArchiveDocumentWriter archiveWriter) {
+  private int indexFileDonorDocuments(TarArchiveDocumentWriter archiveWriter) {
     @Cleanup
-    val processor = new DonorTextDocumentProcessor(mongoUri, indexName, bulkProcessor, archiveWriter);
+    val processor = new DonorTextDocumentProcessor(mongoUri, documentWriter, archiveWriter);
     return processor.process();
-  }
-
-  private BulkProcessor createBulkProcessor() {
-    return BulkProcessor.builder(client, new LoggingBulkListener()).build();
   }
 
   @SneakyThrows
@@ -268,6 +266,12 @@ public class RepositoryFileIndexer implements Closeable {
     return stream(state.getMetaData().getIndices().keys())
         .map(key -> key.value)
         .collect(toImmutableSet());
+  }
+
+  private static DocumentWriter createDocumentWriter(Client client, String indexName) {
+    val configuration = new DocumentWriterConfiguration().client(client).indexName(indexName);
+
+    return DocumentWriterFactory.createDocumentWriter(configuration);
   }
 
 }

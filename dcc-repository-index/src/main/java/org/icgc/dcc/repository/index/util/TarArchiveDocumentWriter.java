@@ -27,8 +27,8 @@ import java.io.OutputStream;
 import org.apache.commons.compress.archivers.tar.TarArchiveEntry;
 import org.apache.commons.compress.archivers.tar.TarArchiveOutputStream;
 import org.apache.commons.compress.utils.CountingOutputStream;
+import org.icgc.dcc.dcc.common.es.model.IndexDocument;
 import org.icgc.dcc.repository.index.core.RepositoryFileIndexes;
-import org.icgc.dcc.repository.index.model.Document;
 import org.icgc.dcc.repository.index.model.DocumentType;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -73,7 +73,7 @@ public class TarArchiveDocumentWriter implements Closeable {
     addMetaEntries();
   }
 
-  public void write(Document document) throws IOException {
+  public void write(IndexDocument document) throws IOException {
     val name = formatEntryName(document);
 
     try {
@@ -116,8 +116,8 @@ public class TarArchiveDocumentWriter implements Closeable {
     archive.closeArchiveEntry();
   }
 
-  private static String formatEntryName(Document document) {
-    return formatEntryName(document.getType().getId(), document.getId());
+  private static String formatEntryName(IndexDocument document) {
+    return formatEntryName(document.getType().getIndexType(), document.getId());
   }
 
   private static String formatEntryName(String parent, String child) {
