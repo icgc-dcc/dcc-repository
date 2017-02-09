@@ -70,9 +70,9 @@ public class ReleaseClient {
   @SneakyThrows
   private ObjectNode readDonors() {
     val size = 100_000; // Way greater than we expect (i.e. ~20k)
-    val fields = COMMA.join("_id", "projectId", "submittedId"); // Limit fields to those needed
+    val fields = COMMA.join("_id", "text.projectId", "text.submittedId"); // Limit fields to those needed
     val indexType = "donor-text"; // Small and has fields exposed
-    val donorUrl = url + "/" + indexType + "/_search?size=" + size + "&fields=" + fields;
+    val donorUrl = url + "/" + indexType + "/_search?size=" + size + "&_source_includes=" + fields;
 
     return DEFAULT.readValue(new URL(donorUrl), ObjectNode.class);
   }
@@ -80,8 +80,8 @@ public class ReleaseClient {
   private static Donor createDonor(JsonNode hit) {
     return Donor.builder()
         .donorId(hit.path("_id").textValue())
-        .projectCode(hit.path("fields").path("projectId").get(0).textValue())
-        .submittedDonorId(hit.path("fields").path("submittedId").get(0).textValue())
+        .projectCode(hit.path("_source").path("text").path("projectId").textValue())
+        .submittedDonorId(hit.path("_source").path("text").path("submittedId").textValue())
         .build();
   }
 
