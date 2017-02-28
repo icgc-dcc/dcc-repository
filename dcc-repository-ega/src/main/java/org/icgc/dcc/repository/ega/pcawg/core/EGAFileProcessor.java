@@ -120,7 +120,16 @@ public class EGAFileProcessor extends RepositoryFileProcessor {
       }
 
       // Only include files that are on donors found in DCC
-      val submitterDonorId = resolveSubmitterDonorId(sampleAttributes);
+
+      String submitterDonorId;
+      try {
+        submitterDonorId = resolveSubmitterDonorId(sampleAttributes);
+      } catch (NullPointerException e) {
+        log.error("NPE in EGA Import... dumping useful info...");
+        log.error("Project: {}, AnalysisId: {}", projectCode, analysisId);
+        throw e;
+      }
+
       if (!context.isDCCSubmittedDonorId(projectCode, submitterDonorId)) {
         continue;
       }
