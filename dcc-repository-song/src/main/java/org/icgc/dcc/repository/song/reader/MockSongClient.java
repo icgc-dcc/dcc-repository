@@ -10,11 +10,8 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 
 import org.icgc.dcc.repository.song.model.SongAnalysis;
-import org.springframework.beans.factory.annotation.Value;
 
-import java.io.File;
 import java.net.URL;
-import java.nio.file.Files;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 

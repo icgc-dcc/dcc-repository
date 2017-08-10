@@ -50,7 +50,6 @@ public class SongImporter extends GenericRepositorySourceFileImporter {
   public SongImporter(@NonNull RepositoryFileContext context) {
     super(Repositories.getSongRepository().getSource(), context, log);
 
-
     this.reader = getDefaultSongClient();
     this.processor = new SongProcessor(Repositories.getSongRepository(), context);
   }

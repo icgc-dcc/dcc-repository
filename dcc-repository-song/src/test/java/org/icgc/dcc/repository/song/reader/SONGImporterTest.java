@@ -18,7 +18,9 @@
 package org.icgc.dcc.repository.song.reader;
 
 import lombok.val;
+import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.song.SongImporter;
+import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -32,7 +34,13 @@ public class SONGImporterTest {
   @Test
   public void testExecute() throws IOException {
     val context = newLocalRepositoryFileContext();
-    val importer = new SongImporter(context);
+    val repository = Repositories.getSongRepository();
+
+    //val reader = new RealSongClient(context.getSongUri());
+    val reader = new MockSongClient();
+    val processor = new SongProcessor(repository, context);
+
+    val importer = new SongImporter(repository, context, reader, processor);
     importer.execute();
   }
 
