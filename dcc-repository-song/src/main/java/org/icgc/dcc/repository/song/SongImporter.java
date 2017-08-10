@@ -28,20 +28,18 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
-import org.icgc.dcc.repository.song.reader.MockSongClient;
-import org.icgc.dcc.repository.song.reader.AbstractSongClient;
-import org.icgc.dcc.repository.song.reader.RealSongClient;
+import org.icgc.dcc.repository.song.reader.SongClient;
 
 
 @Slf4j
 public class SongImporter extends GenericRepositorySourceFileImporter {
   @NonNull
-  private final AbstractSongClient reader;
+  private final SongClient reader;
   @NonNull
   private final SongProcessor processor;
 
   public SongImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
-                      AbstractSongClient reader, SongProcessor processor) {
+                      SongClient reader, SongProcessor processor) {
     super(repository.getSource(), context, log);
     this.reader = reader;
     this.processor = processor;
@@ -51,26 +49,30 @@ public class SongImporter extends GenericRepositorySourceFileImporter {
     super(Repositories.getSongRepository().getSource(), context, log);
 
     this.reader = getDefaultSongClient();
-    this.processor = new SongProcessor(Repositories.getSongRepository(), context);
+    this.processor = getDefaultSongProcessor();
   }
 
-  public AbstractSongClient getDefaultSongClient() {
-    log.info("Creating Song Client for URL" + context.getSongUri().toASCIIString());
-    return new RealSongClient(context.getSongUri());
+  SongClient getDefaultSongClient() {
+    log.info("Creating Song Client for URL" + context.getSongUrl().toString());
+    return new SongClient(context.getSongUrl());
   }
 
-  @SneakyThrows
-  private Iterable<SongAnalysis> readAnalysis() {
-    return reader.readAnalysis();
+  SongProcessor getDefaultSongProcessor() {
+    return new SongProcessor(Repositories.getSongRepository(), context);
+  }
+
+  @Override
+  protected Iterable<RepositoryFile> readFiles() {
+    return processAnalysis(readAnalysis());
   }
 
   private Iterable<RepositoryFile> processAnalysis(Iterable<SongAnalysis> analyses) {
     return processor.getRepositoryFiles(analyses);
   }
 
-  @Override
-  protected Iterable<RepositoryFile> readFiles() {
-    return processAnalysis(readAnalysis());
+  @SneakyThrows
+  private Iterable<SongAnalysis> readAnalysis() {
+    return reader.readAnalyses();
   }
 
 }

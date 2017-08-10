@@ -25,18 +25,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.net.URL;
 
 @Slf4j
 @Ignore("For development only")
-public class RealSongClientTest {
-  RealSongClient c;
+public class SongClientTest {
+  SongClient c;
 
   @SneakyThrows
   @Before
   public void setup()  {
-    c = new RealSongClient(new URI("http://localhost:8080"));
+    c = new SongClient(new URL("http://localhost:8080"));
   }
 
   @Test
@@ -54,13 +53,13 @@ public class RealSongClientTest {
 
   @Test
   public void testGetStudyNode() throws IOException {
-    val node = c.getStudyNode("ABC123");
+    val node = c.getStudy("ABC123");
     log.info("json="+node.toString());
   }
 
   @Test
   public void testReadAnalysis() {
-    val r = c.readAnalysis();
+    val r = c.readAnalyses();
     log.info("Found these analyses:" + r.toString());
   }
 

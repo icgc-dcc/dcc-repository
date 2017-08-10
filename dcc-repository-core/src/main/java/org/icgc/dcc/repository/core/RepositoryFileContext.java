@@ -22,6 +22,7 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.repository.core.util.RepositoryFiles.qualifyDonorId;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +52,7 @@ public class RepositoryFileContext {
   private final URI esUri;
   @NonNull
   @Getter
-  private final URI songUri;
+  private final URL songUrl;
   @Getter
   @NonNull
   private final URI archiveUri;

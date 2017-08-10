@@ -21,7 +21,6 @@ import lombok.val;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.song.core.SongProcessor;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -35,10 +34,8 @@ public class SONGImporterTest {
     val context = newLocalRepositoryFileContext();
     val repository = Repositories.getSongRepository();
 
-    //val reader = new RealSongClient(context.getSongUri());
-    val reader = new MockSongClient();
+    val reader = new MockSongClient("analyses.json","study.json", "studies.json");
     val processor = new SongProcessor(repository, context);
-
     val importer = new SongImporter(repository, context, reader, processor);
     importer.execute();
   }
