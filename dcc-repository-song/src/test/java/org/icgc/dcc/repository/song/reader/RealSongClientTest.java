@@ -21,6 +21,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
@@ -28,6 +29,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @Slf4j
+@Ignore("For development only")
 public class RealSongClientTest {
   RealSongClient c;
 
@@ -36,9 +38,9 @@ public class RealSongClientTest {
   public void setup()  {
     c = new RealSongClient(new URI("http://localhost:8080"));
   }
+
   @Test
   public void testExecute() throws IOException {
-
     val node = c.readJson("http://localhost:8080/studies/ABC123/all");
     val json = node.toString();
     log.info("json="+json);

@@ -28,7 +28,6 @@ import java.io.IOException;
 
 import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
 
-@Ignore("For development only")
 public class SONGImporterTest {
 
   @Test
