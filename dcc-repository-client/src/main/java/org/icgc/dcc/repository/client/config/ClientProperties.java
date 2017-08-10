@@ -56,6 +56,7 @@ public class ClientProperties {
 
     @MongoURI
     MongoClientURI mongoUri;
+
     URI esUri;
     URI archiveUri;
     String indexAlias;
@@ -75,7 +76,7 @@ public class ClientProperties {
 
     @MongoURI
     MongoClientURI mongoUri;
-
+    URI songUri;
   }
 
   @Data
@@ -84,6 +85,7 @@ public class ClientProperties {
     @URL
     String serviceUrl;
     String authToken;
+    boolean enabled;
 
   }
 

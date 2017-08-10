@@ -15,50 +15,51 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.client.core;
+package org.icgc.dcc.repository.song.reader;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.*;
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
-
-import java.io.IOException;
-
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.repository.core.model.RepositorySource;
-import org.junit.Ignore;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.junit.Before;
 import org.junit.Test;
 
-import lombok.val;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-@Ignore("For development only")
-public class RepositoryImporterTest {
+@Slf4j
+public class RealSongClientTest {
+  RealSongClient c;
 
+  @SneakyThrows
+  @Before
+  public void setup()  {
+    c = new RealSongClient(new URI("http://localhost:8080"));
+  }
   @Test
-  public void testExecuteAll() throws IOException {
-    val importer = createImporter();
-    importer.execute();
+  public void testExecute() throws IOException {
+
+    val node = c.readJson("http://localhost:8080/studies/ABC123/all");
+    val json = node.toString();
+    log.info("json="+json);
   }
 
   @Test
-  public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(PCAWG);
-    importer.execute();
+  public void testGetStudies() throws IOException {
+    val node = c.getStudies();
+    log.info("json="+node.toString());
   }
 
   @Test
-  public void testSong() throws IOException {
-    val importer = createImporter(SONG);
-    importer.execute();
+  public void testGetStudyNode() throws IOException {
+    val node = c.getStudyNode("ABC123");
+    log.info("json="+node.toString());
   }
 
   @Test
-  public void testExecuteGDCFiltering() throws IOException {
-    val importer = createImporter(GDC);
-    importer.execute();
-  }
-
-  private static RepositoryImporter createImporter(RepositorySource... sources) {
-    val context = newLocalRepositoryFileContext(sources);
-    return new RepositoryImporter(context, Mailer.builder().enabled(false).build());
+  public void testReadAnalysis() {
+    val r = c.readAnalysis();
+    log.info("Found these analyses:" + r.toString());
   }
 
 }

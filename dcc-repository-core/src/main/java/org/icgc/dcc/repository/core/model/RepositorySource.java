@@ -40,6 +40,7 @@ public enum RepositorySource implements Identifiable {
   EGA("EGA"),
   GDC("GDC"),
   PCAWG("PCAWG"),
+  SONG("SONG"),
   TCGA("TCGA");
 
   @Getter

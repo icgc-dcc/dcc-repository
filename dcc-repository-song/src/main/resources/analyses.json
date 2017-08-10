@@ -1,0 +1,161 @@
+[
+  {
+    "analysisType": "variantCall",
+    "info": "{}",
+    "analysisId": "AN1",
+    "study":
+      {
+        "info": "{}",
+        "studyId": "ABC123",
+        "name": "X1-CA",
+        "organization": "Sample Data Research Institute",
+        "description": "A fictional study"
+      }
+    ,
+    "analysisState": "UNPUBLISHED",
+    "sample": [
+      {
+        "info": "{}",
+        "sampleId": "SA11",
+        "specimenId": "SP1",
+        "sampleSubmitterId": "T285-G7-B9",
+        "sampleType": "DNA",
+        "specimen": {
+          "info": "{}",
+          "specimenId": "SP1",
+          "donorId": "DO1",
+          "specimenSubmitterId": "Tissue-Culture 284 Gamma 3",
+          "specimenClass": "Tumour",
+          "specimenType": "Recurrent tumour - solid tissue"
+        },
+        "donor": {
+          "donorId": "DO1",
+          "donorSubmitterId": "Subject-X23Alpha7",
+          "studyId": "ABC123",
+          "donorGender": "male",
+          "info": "{}"
+        }
+      },
+      {
+        "info": "{}",
+        "sampleId": "SA21",
+        "specimenId": "SP2",
+        "sampleSubmitterId": "T285-G7N",
+        "sampleType": "DNA",
+        "specimen": {
+          "info": "{}",
+          "specimenId": "SP2",
+          "donorId": "DO1",
+          "specimenSubmitterId": "Tissue-Culture 285 Gamma 7",
+          "specimenClass": "Normal",
+          "specimenType": "Normal - other"
+        },
+        "donor": {
+          "donorId": "DO1",
+          "donorSubmitterId": "Subject-X23Alpha7",
+          "studyId": "ABC123",
+          "donorGender": "male",
+          "info": "{}"
+        }
+      }
+    ],
+    "file": [
+      {
+        "info": "{}",
+        "objectId": "FI1",
+        "analysisId": "AN1",
+        "fileName": "ABC-TC285G7-A5-ae3458712345.bam",
+        "studyId": "ABC123",
+        "fileSize": 122333444455555,
+        "fileType": "BAM",
+        "fileMd5sum": "20de2982390c60e33452bf8736c3a9f1"
+      },
+      {
+        "info": "{}",
+        "objectId": "FI2",
+        "analysisId": "AN1",
+        "fileName": "ABC-TC285G7-A5-wleazprt453.bai",
+        "studyId": "ABC123",
+        "fileSize": 123456789,
+        "fileType": "BAI",
+        "fileMd5sum": "53ae1343e3ae333ac24c5a2e6279a21d"
+      }
+    ],
+    "experiment": {
+      "info": "{}",
+      "analysisId": "AN1",
+      "variantCallingTool": "SuperNewVariantCallingTool"
+    },
+    "analysisType": "variantCall"
+  },
+  {
+    "analysisType": "sequencingRead",
+    "info": "{}",
+    "analysisId": "AN2",
+    "study": {
+      "info": "{}",
+      "studyId": "ABC123",
+      "name": "X1-CA",
+      "organization": "Sample Data Research Institute",
+      "description": "A fictional study"
+    },
+    "analysisState": "UNPUBLISHED",
+    "sample": [
+      {
+        "info": "{}",
+        "sampleId": "SA1",
+        "specimenId": "SP1",
+        "sampleSubmitterId": "T285-G7-A5",
+        "sampleType": "DNA",
+        "specimen": {
+          "info": "{}",
+          "specimenId": "SP1",
+          "donorId": "DO1",
+          "specimenSubmitterId": "Tissue-Culture 284 Gamma 3",
+          "specimenClass": "Tumour",
+          "specimenType": "Recurrent tumour - solid tissue"
+        },
+        "donor": {
+          "donorId": "DO1",
+          "donorSubmitterId": "Subject-X23Alpha7",
+          "studyId": "ABC123",
+          "donorGender": "male",
+          "info": "{}"
+        }
+      }
+    ],
+    "file": [
+      {
+        "info": "{}",
+        "objectId": "FI3",
+        "analysisId": "AN2",
+        "fileName": "ABC-TC285-G7-B9-kthx12345.bai",
+        "studyId": "ABC123",
+        "fileSize": 23456789,
+        "fileType": "BAI",
+        "fileMd5sum": "0f41f4e4619e5731447432d101bcfb34"
+      },
+      {
+        "info": "{}",
+        "objectId": "FI4",
+        "analysisId": "AN2",
+        "fileName": "ABC-TC285-G7N-alpha12345.fai",
+        "studyId": "ABC123",
+        "fileSize": 12345,
+        "fileType": "FAI",
+        "fileMd5sum": "1ad22383391004fd12441f39ba7f2380"
+      }
+    ],
+    "experiment": {
+      "analysisId": "AN2",
+      "aligned": true,
+      "alignmentTool": "BigWrench",
+      "insertSize": 12345,
+      "libraryStrategy": "Other",
+      "pairedEnd": true,
+      "referenceGenome": "hg19",
+      "info": "{}"
+    },
+    "analysisType": "sequencingRead"
+  }
+]

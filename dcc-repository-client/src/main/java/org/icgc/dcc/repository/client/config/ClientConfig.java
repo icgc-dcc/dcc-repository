@@ -62,17 +62,18 @@ public class ClientConfig {
     context
         .idUrl(properties.getId().getServiceUrl())
         .authToken(properties.getId().getAuthToken())
-        .realIds(true);
+        .realIds(properties.getId().isEnabled());
 
     // Reference
     context
         .pcawgIdResolver(new PCAWGDonorIdResolver())
         .dccIdResolver(new DCCDonorIdResolver())
-        .importMongoUri(properties.getImports().getMongoUri());
-
+        .importMongoUri(properties.getImports().getMongoUri())
+        .songUri(properties.getImports().getSongUri());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())
+
         .esUri(properties.getRepository().getEsUri())
         .archiveUri(properties.getRepository().getArchiveUri())
         .indexAlias(properties.getRepository().getIndexAlias());

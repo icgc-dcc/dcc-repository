@@ -15,50 +15,25 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.client.core;
+package org.icgc.dcc.repository.song.reader;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.*;
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
-
-import java.io.IOException;
-
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.repository.core.model.RepositorySource;
+import lombok.val;
+import org.icgc.dcc.repository.song.SongImporter;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import lombok.val;
+import java.io.IOException;
+
+import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
 
 @Ignore("For development only")
-public class RepositoryImporterTest {
+public class SONGImporterTest {
 
   @Test
-  public void testExecuteAll() throws IOException {
-    val importer = createImporter();
+  public void testExecute() throws IOException {
+    val context = newLocalRepositoryFileContext();
+    val importer = new SongImporter(context);
     importer.execute();
-  }
-
-  @Test
-  public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(PCAWG);
-    importer.execute();
-  }
-
-  @Test
-  public void testSong() throws IOException {
-    val importer = createImporter(SONG);
-    importer.execute();
-  }
-
-  @Test
-  public void testExecuteGDCFiltering() throws IOException {
-    val importer = createImporter(GDC);
-    importer.execute();
-  }
-
-  private static RepositoryImporter createImporter(RepositorySource... sources) {
-    val context = newLocalRepositoryFileContext(sources);
-    return new RepositoryImporter(context, Mailer.builder().enabled(false).build());
   }
 
 }
