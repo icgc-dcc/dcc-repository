@@ -5,13 +5,13 @@ import com.google.common.io.Resources;
 import java.net.URL;
 
 public class MockSongClient extends SongClient {
-    private URL analysesURL;
-    private URL studyURL;
+    private String analysesURL;
+    private String studyURL;
     private URL studiesURL;
 
     public MockSongClient(String analysesFile, String studyFile, String studiesFile) {
-        analysesURL = resourceFile(analysesFile);
-        studyURL = resourceFile(studyFile);
+        analysesURL = analysesFile;
+        studyURL = studyFile;
         studiesURL = resourceFile(studiesFile);
     }
 
@@ -21,13 +21,14 @@ public class MockSongClient extends SongClient {
 
     @Override
     JsonNode getStudy(String study) {
-        return readJson(studyURL);
+        return readJson(resourceFile(study+ "/" +studyURL));
     }
+    @Override
     JsonNode getStudies() {
         return readJson(studiesURL);
     }
+    @Override
     JsonNode getAnalyses(String study) {
-        return readJson(analysesURL);
+        return readJson(resourceFile(study+"/"+analysesURL));
     }
-
 }

@@ -63,7 +63,7 @@ repository:
 # Imports
 imports:
   mongoUri: mongodb://localhost/dcc-import
-  songUri: http://localhost:8080
+  songUrl: http://localhost:8080
 
 # ID
 id:

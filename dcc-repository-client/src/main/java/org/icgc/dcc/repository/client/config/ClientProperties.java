@@ -76,7 +76,7 @@ public class ClientProperties {
 
     @MongoURI
     MongoClientURI mongoUri;
-    URI songUri;
+    String songUrl;
   }
 
   @Data

@@ -19,13 +19,17 @@ import java.util.stream.StreamSupport;
 
 import static java.lang.String.format;
 
+import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.*;
+import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisId;
+
 import static org.icgc.dcc.repository.song.model.SongStudy.Field.*;
-import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisType;
 import static org.icgc.dcc.repository.song.model.SongFile.Field.*;
 import static org.icgc.dcc.repository.song.model.SongSample.Field.*;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.*;
 import static org.icgc.dcc.repository.song.model.SongDonor.Field.*;
+import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.*;
 import static org.icgc.dcc.repository.song.model.SongStudy.Field.studyId;
+import static org.icgc.dcc.repository.song.model.SongVariantCall.Field.variantCallingTool;
 
 @RequiredArgsConstructor
 public class SongProcessor {
@@ -69,15 +73,37 @@ public class SongProcessor {
                 .setAccess(RepositoryFile.FileAccess.CONTROLLED);
         val type = a.get(analysisType);
 
-        repoFile.getDataBundle().setDataBundleId(f.get(analysisId));
-        repoFile.getAnalysisMethod().setAnalysisType(type);
+        repoFile.getDataBundle().setDataBundleId(a.get(analysisId));
+
+        val analysisMethod = repoFile.getAnalysisMethod();
+        analysisMethod.setAnalysisType(type);
+
+        String software=null;
+        val experiment=a.getExperiment();
+
+        if (type.equals(SongVariantCall.TYPE)) {
+            val variantCall = (SongVariantCall) experiment;
+
+            software = variantCall.get(variantCallingTool);
+        } else if (type.equals(SongSequencingRead.TYPE)) {
+            val sequencingRead = (SongSequencingRead) experiment;
+
+            software = sequencingRead.get(alignmentTool);
+
+            repoFile.getDataCategorization().
+                    setExperimentalStrategy(sequencingRead.get(libraryStrategy));
+
+            repoFile.getReferenceGenome().setReferenceName(sequencingRead.get(referenceGenome));
+        }
+
+        analysisMethod.setSoftware(software);
 
         val fileCopy = repoFile.addFileCopy()
                 .setFileName(f.get(fileName))
                 .setFileFormat(f.get(fileType))
                 .setFileSize(f.getSize())
                 .setFileMd5sum(f.get(fileMd5sum))
-                .setRepoDataBundleId(f.get(analysisId))
+                .setRepoDataBundleId(a.get(analysisId))
                 .setRepoFileId(fileId)
                 .setRepoType(repository.getType().getId())
                 .setRepoOrg(repository.getSource().getId())

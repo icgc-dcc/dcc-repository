@@ -8,54 +8,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-class JsonContainer {
-   private final JsonNode json;
-   JsonContainer(JsonNode json) {
-       assert json.isObject();
-       this.json=json;
-   }
 
-    String get(String key) {
-        return json.at("/"+key).asText();
-    }
-
-    public long getLong(String key) {
-        return json.at("/" + key).asLong(0);
-    }
-
-    public JsonNode from(String key) {
-        return json.at("/"+key);
-    }
-
-    public JsonNode getInfo() {
-       return from("info");
-    }
-
-    @Override
-    public String toString() {
-        return json.toString();
-    }
-}
-
-abstract class SongExperiment extends JsonContainer {
-    SongExperiment(JsonNode j) {
-        super(j);
-    }
-}
-
-class SongVariantCall extends SongExperiment {
-    public final static String TYPE="variantCall";
-    enum Field {}
-    SongVariantCall(JsonNode j) {
-        super(j);
-    }
-}
-
-class SongSequencingRead extends SongExperiment {
-    public final static String TYPE="sequencingRead";
-    enum Field {}
-    SongSequencingRead(JsonNode j) { super(j); }
-}
 
 public class SongAnalysis extends JsonContainer {
     public enum Field { study, analysisId, analysisType, analysisState}

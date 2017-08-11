@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.repository.client.config;
 
+import lombok.SneakyThrows;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.repository.client.core.RepositoryImporter;
@@ -29,6 +30,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import lombok.val;
+
+import java.net.URL;
 
 @Configuration
 public class ClientConfig {
@@ -69,7 +72,7 @@ public class ClientConfig {
         .pcawgIdResolver(new PCAWGDonorIdResolver())
         .dccIdResolver(new DCCDonorIdResolver())
         .importMongoUri(properties.getImports().getMongoUri())
-        .songUri(properties.getImports().getSongUri());
+        .songUrl(url(properties.getImports().getSongUrl()));
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())
@@ -83,6 +86,11 @@ public class ClientConfig {
         .report(new BufferedReport());
 
     return context.build();
+  }
+
+  @SneakyThrows
+  private URL url(String path) {
+    return new URL(path);
   }
 
 }
