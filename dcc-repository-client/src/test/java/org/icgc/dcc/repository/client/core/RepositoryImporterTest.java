@@ -40,7 +40,7 @@ public class RepositoryImporterTest {
 
   @Test
   public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(PCAWG);
+    val importer = createImporter(AWS, COLLAB, PCAWG);
     importer.execute();
   }
 

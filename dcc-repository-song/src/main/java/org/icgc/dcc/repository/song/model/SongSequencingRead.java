@@ -20,6 +20,7 @@ package org.icgc.dcc.repository.song.model;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongSequencingRead extends SongExperiment {
+
     public final static String TYPE="sequencingRead";
     public enum Field {
             alignmentTool,
@@ -42,4 +43,5 @@ public class SongSequencingRead extends SongExperiment {
     public String get(Field f) {
         return get(f.toString());
     }
+
 }

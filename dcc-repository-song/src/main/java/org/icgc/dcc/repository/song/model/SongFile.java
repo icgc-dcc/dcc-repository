@@ -20,6 +20,7 @@ package org.icgc.dcc.repository.song.model;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongFile extends JsonContainer {
+
     public enum Field { analysisId, studyId, objectId, fileName, fileType, fileSize, fileMd5sum}
 
     SongFile(JsonNode j) {
@@ -33,4 +34,5 @@ public class SongFile extends JsonContainer {
     public Long getSize() {
         return getLong(Field.fileSize.toString());
     }
+
 }

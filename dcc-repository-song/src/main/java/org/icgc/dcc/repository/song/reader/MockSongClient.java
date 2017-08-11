@@ -22,6 +22,7 @@ import com.google.common.io.Resources;
 import java.net.URL;
 
 public class MockSongClient extends SongClient {
+
     private String analysesURL;
     private String studyURL;
     private URL studiesURL;
@@ -48,4 +49,5 @@ public class MockSongClient extends SongClient {
     JsonNode getAnalyses(String study) {
         return readJson(resourceFile(study+"/"+analysesURL));
     }
+
 }

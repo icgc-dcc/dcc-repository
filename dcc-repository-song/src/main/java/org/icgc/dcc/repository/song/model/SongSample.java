@@ -20,6 +20,7 @@ package org.icgc.dcc.repository.song.model;
 import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongSample extends JsonContainer {
+
     SongSpecimen specimen;
     SongDonor donor;
 
@@ -42,5 +43,6 @@ public class SongSample extends JsonContainer {
     public String get(Field f) {
         return get(f.toString());
     }
+
 }
 

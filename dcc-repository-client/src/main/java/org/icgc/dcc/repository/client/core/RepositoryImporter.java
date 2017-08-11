@@ -253,7 +253,7 @@ public class RepositoryImporter {
         new CollabImporter(context),
         new TCGAImporter(context),
         new CGHubImporter(context),
-            new SongImporter(context));
+        new SongImporter(context));
   }
 
   private static void logStep(int stepNumber, int stepCount, String message) {

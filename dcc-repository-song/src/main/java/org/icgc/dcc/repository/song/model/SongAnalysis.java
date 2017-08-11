@@ -18,27 +18,24 @@
 package org.icgc.dcc.repository.song.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import lombok.val;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 
 
 public class SongAnalysis extends JsonContainer {
-    public enum Field { study, analysisId, analysisType, analysisState}
-
-    List<SongFile> files;
-    List<SongSample> samples;
-    SongExperiment experiment;
-    SongStudy study;
+    public enum Field { analysisId, analysisType, analysisState}
 
     private final static String SAMPLES ="sample";
     private final static String EXPERIMENT="experiment";
     private final static String FILES="file";
 
+    private List<SongFile> files;
+    private List<SongSample> samples;
+    private SongExperiment experiment;
+    private SongStudy study;
 
     public SongAnalysis(JsonNode json, JsonNode study) {
         super(json);
@@ -50,7 +47,6 @@ public class SongAnalysis extends JsonContainer {
 
     private void setFiles(JsonNode f) {
         assert f.isArray();
-
         files = new ArrayList<>();
         f.elements().forEachRemaining(node->files.add(new SongFile(node)));
     }
@@ -63,6 +59,10 @@ public class SongAnalysis extends JsonContainer {
 
     public List<SongSample> getSamples() {
         return Collections.unmodifiableList(samples);
+    }
+
+    public SongSample getFirstSample()  {
+        return samples.get(0);
     }
 
     public List<SongFile> getFiles() {
@@ -83,13 +83,10 @@ public class SongAnalysis extends JsonContainer {
         }
     }
 
-    public SongSample getFirstSample()  {
-        return samples.get(0);
-    }
-
     public String get(Field f) {
         return get(f.toString());
     }
+
 }
 
 

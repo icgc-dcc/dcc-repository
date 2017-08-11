@@ -82,7 +82,6 @@ public class SongProcessor {
 
         val specimen = sample.getSpecimen();
 
-
         val repoFile = new RepositoryFile()
                 .setId(context.ensureFileId(fileId))
                 .setObjectId(fileId)
@@ -95,12 +94,11 @@ public class SongProcessor {
         val analysisMethod = repoFile.getAnalysisMethod();
         analysisMethod.setAnalysisType(type);
 
-        String software=null;
         val experiment=a.getExperiment();
 
+        String software=null;
         if (type.equals(SongVariantCall.TYPE)) {
             val variantCall = (SongVariantCall) experiment;
-
             software = variantCall.get(variantCallingTool);
         } else if (type.equals(SongSequencingRead.TYPE)) {
             val sequencingRead = (SongSequencingRead) experiment;
@@ -112,7 +110,6 @@ public class SongProcessor {
 
             repoFile.getReferenceGenome().setReferenceName(sequencingRead.get(referenceGenome));
         }
-
         analysisMethod.setSoftware(software);
 
         val fileCopy = repoFile.addFileCopy()
@@ -200,7 +197,6 @@ public class SongProcessor {
     boolean isXMLFile(String filename) {
         return hasExtension(filename, "XML");
     }
-
     boolean isBAIFile(String filename) {
         return hasExtension(filename,"BAI");
     }

@@ -30,6 +30,7 @@ import java.net.URL;
 @Slf4j
 @Ignore("For development only")
 public class SongClientTest {
+  
   SongClient c;
 
   @SneakyThrows
