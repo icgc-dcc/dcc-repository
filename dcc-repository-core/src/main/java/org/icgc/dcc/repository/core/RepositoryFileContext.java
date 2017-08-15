@@ -53,6 +53,9 @@ public class RepositoryFileContext {
   @NonNull
   @Getter
   private final URL songUrl;
+  @NonNull
+  @Getter
+  private final String songToken;
   @Getter
   @NonNull
   private final URI archiveUri;

@@ -69,6 +69,9 @@ public final class RepositoryFileContextBuilder {
   @Accessors(chain = true, fluent = true)
   private URL songUrl = url("http://localhost:8080");
   @Setter
+  @Accessors(chain = true, fluent=true)
+  private String songToken = "";
+  @Setter
   @Accessors(chain = true, fluent = true)
   private URI esUri = URIs.getUri("es://localhost:9300");
   @Setter
@@ -115,7 +118,7 @@ public final class RepositoryFileContextBuilder {
     val idClient = createIdClient();
     val tcgaMappings = new TCGAMappingsReader().readMappings();
 
-    return new RepositoryFileContext(repoMongoUri, esUri, songUrl, archiveUri, indexAlias, skipImport, sources, readOnly,
+    return new RepositoryFileContext(repoMongoUri, esUri, songUrl, songToken, archiveUri, indexAlias, skipImport, sources, readOnly,
         primarySites, idClient, tcgaMappings, pcawgIdResolver, dccIdResolver, report);
   }
 

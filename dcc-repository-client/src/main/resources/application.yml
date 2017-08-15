@@ -64,6 +64,7 @@ repository:
 imports:
   mongoUri: mongodb://localhost/dcc-import
   songUrl: http://localhost:8080
+  songToken: testing
 
 # ID
 id:

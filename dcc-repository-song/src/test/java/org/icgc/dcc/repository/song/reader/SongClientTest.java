@@ -36,7 +36,7 @@ public class SongClientTest {
   @SneakyThrows
   @Before
   public void setup()  {
-    c = new SongClient(new URL("http://localhost:8080"));
+    c = new SongClient(new URL("http://localhost:8080"),null);
   }
 
   @Test

@@ -21,10 +21,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 
-import java.net.URI;
+import java.io.InputStream;
 import java.net.URL;
 
 import java.util.stream.Collectors;
@@ -33,17 +34,22 @@ import java.util.stream.StreamSupport;
 
 import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 
+@Slf4j
 public class SongClient {
-
+    private final String songToken;
     private final URL songPath;
     private static final ObjectMapper MAPPER = new ObjectMapper().
             configure(AUTO_CLOSE_SOURCE, false);
 
-    public SongClient(URL path) {
+    public SongClient(URL path, String token) {
         songPath=path;
+        songToken=token;
     }
 
-    SongClient() { songPath=url("http://localhost:8080"); }
+    SongClient() {
+      songPath=url("http://localhost:8080");
+      songToken=null;
+    }
 
     public Iterable<SongAnalysis> readAnalyses() {
         val studies = getStudies();
@@ -86,7 +92,19 @@ public class SongClient {
 
     @SneakyThrows
     JsonNode readJson(URL url) {
-        return MAPPER.readTree(url);
+        val connection = url.openConnection();
+        if (songToken != null) {
+          log.info("Setting token =" + songToken);
+          connection.setRequestProperty("Authorization", "Bearer " + songToken);
+        } else {
+          log.info("No token set!");
+        }
+        return MAPPER.readTree(connection.getInputStream());
+    }
+
+    @SneakyThrows
+    JsonNode readJson(InputStream s) {
+        return MAPPER.readTree(s);
     }
 
    <T> Stream<T> stream(Iterable<T> o) {

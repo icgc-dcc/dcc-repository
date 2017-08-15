@@ -72,7 +72,8 @@ public class ClientConfig {
         .pcawgIdResolver(new PCAWGDonorIdResolver())
         .dccIdResolver(new DCCDonorIdResolver())
         .importMongoUri(properties.getImports().getMongoUri())
-        .songUrl(url(properties.getImports().getSongUrl()));
+        .songUrl(url(properties.getImports().getSongUrl()))
+        .songToken(properties.getImports().getSongToken());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())

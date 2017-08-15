@@ -54,7 +54,7 @@ public class SongImporter extends GenericRepositorySourceFileImporter {
 
   SongClient getDefaultSongClient() {
     log.info("Creating Song Client for URL" + context.getSongUrl().toString());
-    return new SongClient(context.getSongUrl());
+    return new SongClient(context.getSongUrl(), context.getSongToken());
   }
 
   SongProcessor getDefaultSongProcessor() {
