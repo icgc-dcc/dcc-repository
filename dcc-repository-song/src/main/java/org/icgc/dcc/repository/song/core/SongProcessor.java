@@ -17,17 +17,26 @@
  */
 package org.icgc.dcc.repository.song.core;
 
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
+import com.sun.org.apache.bcel.internal.generic.IMUL;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
+import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.core.RepositoryFileProcessor;
+
 import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
+import org.icgc.dcc.repository.core.model.RepositoryFile.*;
 import org.icgc.dcc.repository.song.model.*;
 
+import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.singletonList;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -46,16 +55,28 @@ import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.*;
 import static org.icgc.dcc.repository.song.model.SongStudy.Field.studyId;
 import static org.icgc.dcc.repository.song.model.SongVariantCall.Field.variantCallingTool;
 
-@RequiredArgsConstructor
-public class SongProcessor {
+@Slf4j
+public class SongProcessor extends RepositoryFileProcessor {
 		@NonNull
 		private final Repository repository;
-		@NonNull
-		private final RepositoryFileContext context;
+
+		public SongProcessor(RepositoryFileContext c, Repository r) {
+				super(c);
+				repository = r;
+		}
 
 		public Iterable<RepositoryFile> getRepositoryFiles(Iterable<SongAnalysis> analyses) {
-				return stream(analyses.spliterator(), false).
+				val files= stream(analyses.spliterator(), false).
 						flatMap(this::convertFiles).collect(Collectors.toList());
+
+						log.info("Translating TCGC UUIDs...");
+						translateUUIDs(files);
+
+						log.info("Assigning ICGC IDs...");
+						assignIds(files);
+
+
+				return files;
 		}
 
 		public Stream<RepositoryFile> convertFiles(SongAnalysis analysis) {
@@ -65,6 +86,153 @@ public class SongProcessor {
 		}
 
 		private RepositoryFile convert(SongFile f, SongAnalysis a) {
+				val fileId = f.get(objectId);
+
+
+				val repoFile = new RepositoryFile()
+						.setId(fileId)
+						.setObjectId(fileId)
+						.setStudy(getStudies(a))
+						.setAccess(FileAccess.CONTROLLED)
+						.setDataBundle(getDataBundle(a))
+						.setAnalysisMethod(getAnalysisMethod(a))
+						.setDataCategorization(getDataCategorization(a,f))
+						.setReferenceGenome(ReferenceGenome.PCAWG)
+						.setFileCopies(getFileCopies(a,f))
+						.setDonors(getDonors(a));
+
+				return repoFile;
+		}
+
+		List<String> getStudies(SongAnalysis a) {
+				return ImmutableList.of(a.getStudy().get(studyId));
+		}
+
+		DataBundle getDataBundle(SongAnalysis a) {
+				return new DataBundle().setDataBundleId(a.get(analysisId));
+		}
+
+		AnalysisMethod getAnalysisMethod(SongAnalysis a) {
+				return new AnalysisMethod()
+						.setAnalysisType(getAnalysisType(a))
+						.setSoftware(getSoftware(a));
+		}
+
+		String getAnalysisType(SongAnalysis a) {
+				if (isSequencingRead(a)) {
+						return "Reference alignment";
+				}
+				if (isVariantCall(a)) {
+						return "Variant calling";
+				}
+
+				log.warn("Invalid analysis type for " +a+", setting analysis type to null");
+				return null;
+		}
+
+
+		String getSoftware(SongAnalysis a) {
+
+				if (isSequencingRead(a)) {
+						return getSequencingRead(a).get(alignmentTool);
+				}
+				if (isVariantCall(a)) {
+						return getVariantCall(a).get(variantCallingTool);
+				}
+				log.warn("Invalid  analysis type for " + a + "setting software to null");
+				return null;
+		}
+
+		boolean isVariantCall(SongAnalysis a) {
+				return SongVariantCall.TYPE.equals(a.get(analysisType));
+		}
+
+		SongVariantCall getVariantCall(SongAnalysis a) {
+				return (SongVariantCall) a.getExperiment();
+		}
+
+		SongSequencingRead getSequencingRead(SongAnalysis a) {
+				return (SongSequencingRead) a.getExperiment();
+		}
+
+		boolean isSequencingRead(SongAnalysis a) {
+				return SongSequencingRead.TYPE.equals(a.get(analysisType));
+		}
+
+		DataCategorization getDataCategorization(SongAnalysis a,SongFile f) {
+				return new DataCategorization()
+						.setDataType(getDataType(a,f))
+						.setExperimentalStrategy(getExperimentalStrategy(a));
+		}
+		String getDataType(SongAnalysis a, SongFile f) {
+				if (isSequencingRead(a)) {
+						return RepositoryFile.DataType.ALIGNED_READS;
+				}
+				if (isVariantCall(a)) {
+						return resolveVariantCallingDataType(f.get(fileName));
+				}
+
+				log.warn("Invalid analysis type for " + a + ", setting data type to null");
+
+				return null;
+		}
+		String getExperimentalStrategy(SongAnalysis a) {
+				if (isSequencingRead(a)) {
+						return getSequencingRead(a).get(libraryStrategy);
+				}
+				if (isVariantCall(a)) {
+						return RepositoryFile.ExperimentalStrategy.WGS;
+				}
+
+				log.warn("Invalid analysis type for" + a + ", setting experimentalStrategy to null");
+				return null;
+		}
+		List<FileCopy> getFileCopies(SongAnalysis a, SongFile f) {
+				return ImmutableList.of(getFileCopy(a,f));
+		}
+
+		FileCopy getFileCopy(SongAnalysis a, SongFile f) {
+				val fileId = f.get(objectId);
+				return new FileCopy()
+						.setFileName(f.get(fileName))
+						.setFileFormat(f.get(fileType))
+						.setFileSize(f.getSize())
+						.setFileMd5sum(f.get(fileMd5sum))
+						.setLastModified(0L)
+						.setRepoDataBundleId(a.get(analysisId))
+						.setRepoFileId(fileId)
+						.setRepoType(repository.getType().getId())
+						.setRepoOrg(repository.getSource().getId())
+						.setRepoName(repository.getName())
+						.setRepoCode(repository.getCode())
+						.setRepoCountry(repository.getCountry())
+						.setRepoBaseUrl(repository.getBaseUrl())
+						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId)
+						.setRepoMetadataPath(getRepoMetaDataPath(f))
+						.setIndexFile(getIndexFile(a.getFiles()))
+						;
+		}
+		List<Donor>	getDonors(SongAnalysis a) {
+				return ImmutableList.of(getDonor(a));
+		}
+		Donor getDonor(SongAnalysis a) {
+				val study = a.getStudy();
+				val sample = a.getFirstSample();
+				val donor = sample.getDonor();
+				val specimen = sample.getSpecimen();
+				return new Donor()
+						.setStudy("PCAWG")
+						.setProjectCode(study.get(studyId))
+						.setDonorId(donor.get(donorId))
+						.setSpecimenId(singletonList(specimen.get(specimenId)))
+						.setSpecimenType(singletonList(specimen.get(specimenType)))
+						.setSampleId(singletonList(sample.get(sampleId)))
+						.setSubmittedDonorId(donor.get(donorSubmitterId))
+						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
+						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
+		}
+
+		private RepositoryFile convert_old(SongFile f, SongAnalysis a) {
 				val fileId = f.get(objectId);
 				val study = a.getStudy();
 
@@ -76,7 +244,7 @@ public class SongProcessor {
 				val repoFile = new RepositoryFile()
 						.setId(context.ensureFileId(fileId))
 						.setObjectId(fileId)
-						.setStudy(ImmutableList.of(study.get(name)))
+						.setStudy(getStudies(a))
 						.setAccess(RepositoryFile.FileAccess.CONTROLLED);
 				val type = a.get(analysisType);
 
@@ -88,26 +256,42 @@ public class SongProcessor {
 				val experiment = a.getExperiment();
 
 				String software = null;
+
+
+
+				repoFile
+						.setReferenceGenome(RepositoryFile.ReferenceGenome.PCAWG);
+
+				val category = new RepositoryFile.DataCategorization();
+
 				if (type.equals(SongVariantCall.TYPE)) {
 						val variantCall = (SongVariantCall) experiment;
 						software = variantCall.get(variantCallingTool);
+						category.setExperimentalStrategy(RepositoryFile.ExperimentalStrategy.WGS).
+								setDataType(f.get(fileType));
+						analysisMethod.setAnalysisType("Variant Calling");
 				} else if (type.equals(SongSequencingRead.TYPE)) {
 						val sequencingRead = (SongSequencingRead) experiment;
+						analysisMethod.setAnalysisType("Reference alignment");
 
 						software = sequencingRead.get(alignmentTool);
 
-						repoFile.getDataCategorization().
-								setExperimentalStrategy(sequencingRead.get(libraryStrategy));
+						category.setExperimentalStrategy(sequencingRead.get(libraryStrategy))
+								.setDataType(RepositoryFile.DataType.ALIGNED_READS);
 
 						repoFile.getReferenceGenome().setReferenceName(sequencingRead.get(referenceGenome));
+						analysisMethod.setAnalysisType("Reference Alignment");
 				}
 				analysisMethod.setSoftware(software);
+				repoFile
+						.setDataCategorization(category);
 
 				val fileCopy = repoFile.addFileCopy()
 						.setFileName(f.get(fileName))
 						.setFileFormat(f.get(fileType))
 						.setFileSize(f.getSize())
 						.setFileMd5sum(f.get(fileMd5sum))
+						.setLastModified(0L)
 						.setRepoDataBundleId(a.get(analysisId))
 						.setRepoFileId(fileId)
 						.setRepoType(repository.getType().getId())
@@ -116,15 +300,16 @@ public class SongProcessor {
 						.setRepoCode(repository.getCode())
 						.setRepoCountry(repository.getCountry())
 						.setRepoBaseUrl(repository.getBaseUrl())
-						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId);
+						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId)
+						.setRepoMetadataPath(getRepoMetaDataPath(f));
 
-				val indexFile = getIndexFile(fileCopy, a.getFiles());
+				val indexFile = getIndexFile( a.getFiles());
 				if (indexFile != null) {
 						fileCopy.setIndexFile(indexFile);
 				}
 
 				repoFile.addDonor()
-						.setStudy(study.get(name))
+						.setStudy("PCAWG")
 						.setProjectCode(study.get(studyId))
 						.setDonorId(donor.get(donorId))
 						.setSpecimenId(singletonList(specimen.get(specimenId)))
@@ -137,13 +322,17 @@ public class SongProcessor {
 				return repoFile;
 		}
 
-		RepositoryFile.IndexFile getIndexFile(RepositoryFile.FileCopy fileCopy, List<SongFile> files) {
+		String getRepoMetaDataPath(SongFile f) {
+				if (isXMLFile(f.get(fileName))) {
+						return repository.getType().getMetadataPath() + "/" + f.get(objectId);
+				}
+				return null;
+		}
+
+		IndexFile getIndexFile( List<SongFile> files) {
 				for (val f : files) {
 						val filename = f.get(fileName);
-						if (isXMLFile(filename)) {
-								fileCopy.setRepoMetadataPath(
-										repository.getType().getMetadataPath() + "/" + f.get(objectId));
-						} else if (isBAIFile(filename)) {
+						if (isBAIFile(filename)) {
 								return createIndexFile(f, "BAI");
 						} else if (isTBIFile(filename)) {
 								return createIndexFile(f, "TBI");
@@ -151,10 +340,10 @@ public class SongProcessor {
 								return createIndexFile(f, "IDX");
 						}
 				}
-				return null;
+				return new IndexFile();
 		}
 
-		RepositoryFile.IndexFile createIndexFile(SongFile file, String fileFormat) {
+		IndexFile createIndexFile(SongFile file, String fileFormat) {
 				val indexFile = new RepositoryFile.IndexFile();
 				val fileId = file.get(objectId);
 				indexFile.
@@ -166,6 +355,7 @@ public class SongProcessor {
 						.setFileMd5sum(file.get(fileMd5sum));
 				return indexFile;
 		}
+
 
 		boolean hasExtension(String filename, String extension) {
 				String[] suffixes = { "", ".gz", ".zip", ".b2zip" };
@@ -208,4 +398,27 @@ public class SongProcessor {
 				}
 				return false;
 		}
+
+		public static String resolveVariantCallingDataType(String fileName) {
+				if (fileName.endsWith(".somatic.snv_mnv.vcf.gz")) {
+						return RepositoryFile.DataType.SSM;
+				} else if (fileName.endsWith(".somatic.cnv.vcf.gz")) {
+						return RepositoryFile.DataType.CNSM;
+				} else if (fileName.endsWith(".somatic.sv.vcf.gz")) {
+						return RepositoryFile.DataType.STSM;
+				} else if (fileName.endsWith(".somatic.indel.vcf.gz")) {
+						return RepositoryFile.DataType.SSM;
+				} else if (fileName.endsWith(".germline.snv_mnv.vcf.gz")) {
+						return RepositoryFile.DataType.SGV;
+				} else if (fileName.endsWith(".germline.cnv.vcf.gz")) {
+						return RepositoryFile.DataType.CNGV;
+				} else if (fileName.endsWith(".germline.sv.vcf.gz")) {
+						return RepositoryFile.DataType.STGV;
+				} else if (fileName.endsWith(".germline.indel.vcf.gz")) {
+						return RepositoryFile.DataType.SGV;
+				} else {
+						return null;
+				}
+		}
+
 }

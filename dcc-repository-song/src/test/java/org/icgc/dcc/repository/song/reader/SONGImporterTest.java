@@ -35,7 +35,7 @@ public class SONGImporterTest {
     val repository = Repositories.getSongRepository();
 
     val reader = new MockSongClient("analyses.json", "study.json", "studies.json");
-    val processor = new SongProcessor(repository, context);
+    val processor = new SongProcessor(context, repository);
     val importer = new SongImporter(repository, context, reader, processor);
     importer.execute();
   }

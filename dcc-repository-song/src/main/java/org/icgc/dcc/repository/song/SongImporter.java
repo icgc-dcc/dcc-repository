@@ -58,7 +58,7 @@ public class SongImporter extends GenericRepositorySourceFileImporter {
   }
 
   SongProcessor getDefaultSongProcessor() {
-    return new SongProcessor(Repositories.getSongRepository(), context);
+    return new SongProcessor(context, Repositories.getSongRepository());
   }
 
   @Override
