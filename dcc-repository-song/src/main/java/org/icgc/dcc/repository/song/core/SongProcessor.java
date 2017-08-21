@@ -46,7 +46,6 @@ import static java.util.stream.StreamSupport.stream;
 import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.*;
 import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisId;
 
-import static org.icgc.dcc.repository.song.model.SongStudy.Field.*;
 import static org.icgc.dcc.repository.song.model.SongFile.Field.*;
 import static org.icgc.dcc.repository.song.model.SongSample.Field.*;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.*;
@@ -223,6 +222,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 				return new Donor()
 						.setStudy("PCAWG")
 						.setProjectCode(study.get(studyId))
+						.setPrimarySite(context.getPrimarySite(study.get(studyId)))
 						.setDonorId(donor.get(donorId))
 						.setSpecimenId(singletonList(specimen.get(specimenId)))
 						.setSpecimenType(singletonList(specimen.get(specimenType)))
@@ -230,96 +230,6 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setSubmittedDonorId(donor.get(donorSubmitterId))
 						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
 						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
-		}
-
-		private RepositoryFile convert_old(SongFile f, SongAnalysis a) {
-				val fileId = f.get(objectId);
-				val study = a.getStudy();
-
-				val sample = a.getFirstSample();
-				val donor = sample.getDonor();
-
-				val specimen = sample.getSpecimen();
-
-				val repoFile = new RepositoryFile()
-						.setId(context.ensureFileId(fileId))
-						.setObjectId(fileId)
-						.setStudy(getStudies(a))
-						.setAccess(RepositoryFile.FileAccess.CONTROLLED);
-				val type = a.get(analysisType);
-
-				repoFile.getDataBundle().setDataBundleId(a.get(analysisId));
-
-				val analysisMethod = repoFile.getAnalysisMethod();
-				analysisMethod.setAnalysisType(type);
-
-				val experiment = a.getExperiment();
-
-				String software = null;
-
-
-
-				repoFile
-						.setReferenceGenome(RepositoryFile.ReferenceGenome.PCAWG);
-
-				val category = new RepositoryFile.DataCategorization();
-
-				if (type.equals(SongVariantCall.TYPE)) {
-						val variantCall = (SongVariantCall) experiment;
-						software = variantCall.get(variantCallingTool);
-						category.setExperimentalStrategy(RepositoryFile.ExperimentalStrategy.WGS).
-								setDataType(f.get(fileType));
-						analysisMethod.setAnalysisType("Variant Calling");
-				} else if (type.equals(SongSequencingRead.TYPE)) {
-						val sequencingRead = (SongSequencingRead) experiment;
-						analysisMethod.setAnalysisType("Reference alignment");
-
-						software = sequencingRead.get(alignmentTool);
-
-						category.setExperimentalStrategy(sequencingRead.get(libraryStrategy))
-								.setDataType(RepositoryFile.DataType.ALIGNED_READS);
-
-						repoFile.getReferenceGenome().setReferenceName(sequencingRead.get(referenceGenome));
-						analysisMethod.setAnalysisType("Reference Alignment");
-				}
-				analysisMethod.setSoftware(software);
-				repoFile
-						.setDataCategorization(category);
-
-				val fileCopy = repoFile.addFileCopy()
-						.setFileName(f.get(fileName))
-						.setFileFormat(f.get(fileType))
-						.setFileSize(f.getSize())
-						.setFileMd5sum(f.get(fileMd5sum))
-						.setLastModified(0L)
-						.setRepoDataBundleId(a.get(analysisId))
-						.setRepoFileId(fileId)
-						.setRepoType(repository.getType().getId())
-						.setRepoOrg(repository.getSource().getId())
-						.setRepoName(repository.getName())
-						.setRepoCode(repository.getCode())
-						.setRepoCountry(repository.getCountry())
-						.setRepoBaseUrl(repository.getBaseUrl())
-						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId)
-						.setRepoMetadataPath(getRepoMetaDataPath(f));
-
-				val indexFile = getIndexFile( a.getFiles());
-				if (indexFile != null) {
-						fileCopy.setIndexFile(indexFile);
-				}
-
-				repoFile.addDonor()
-						.setStudy("PCAWG")
-						.setProjectCode(study.get(studyId))
-						.setDonorId(donor.get(donorId))
-						.setSpecimenId(singletonList(specimen.get(specimenId)))
-						.setSpecimenType(singletonList(specimen.get(specimenType)))
-						.setSampleId(singletonList(sample.get(sampleId)))
-						.setSubmittedDonorId(donor.get(donorSubmitterId))
-						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
-						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
-
-				return repoFile;
 		}
 
 		String getRepoMetaDataPath(SongFile f) {
