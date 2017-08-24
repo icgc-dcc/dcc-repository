@@ -91,7 +91,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 				val repoFile = new RepositoryFile()
 						.setId(fileId)
 						.setObjectId(fileId)
-						.setStudy(getStudies(a))
+						.setStudy(ImmutableList.of("PCAWG"))
 						.setAccess(FileAccess.CONTROLLED)
 						.setDataBundle(getDataBundle(a))
 						.setAnalysisMethod(getAnalysisMethod(a))
