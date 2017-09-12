@@ -85,12 +85,12 @@ public class SongProcessor extends RepositoryFileProcessor {
 		}
 
 		private RepositoryFile convert(SongFile f, SongAnalysis a) {
-				val fileId = f.get(objectId);
+				val id = f.get(objectId);
 
 
 				val repoFile = new RepositoryFile()
-						.setId(fileId)
-						.setObjectId(fileId)
+						.setId(context.ensureFileId(id))
+						.setObjectId(id)
 						.setStudy(ImmutableList.of("PCAWG"))
 						.setAccess(FileAccess.CONTROLLED)
 						.setDataBundle(getDataBundle(a))
@@ -197,7 +197,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setFileFormat(f.get(fileType))
 						.setFileSize(f.getSize())
 						.setFileMd5sum(f.get(fileMd5sum))
-						.setLastModified(0L)
+						.setLastModified(null)
 						.setRepoDataBundleId(a.get(analysisId))
 						.setRepoFileId(fileId)
 						.setRepoType(repository.getType().getId())
@@ -223,10 +223,10 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setStudy("PCAWG")
 						.setProjectCode(study.get(studyId))
 						.setPrimarySite(context.getPrimarySite(study.get(studyId)))
-						.setDonorId(donor.get(donorId))
-						.setSpecimenId(singletonList(specimen.get(specimenId)))
+						.setDonorId(null)
+						.setSpecimenId(null)
 						.setSpecimenType(singletonList(specimen.get(specimenType)))
-						.setSampleId(singletonList(sample.get(sampleId)))
+						.setSampleId(null)
 						.setSubmittedDonorId(donor.get(donorSubmitterId))
 						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
 						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
@@ -255,10 +255,10 @@ public class SongProcessor extends RepositoryFileProcessor {
 
 		IndexFile createIndexFile(SongFile file, String fileFormat) {
 				val indexFile = new RepositoryFile.IndexFile();
-				val fileId = file.get(objectId);
+				val id = file.get(objectId);
 				indexFile.
-						setId(context.ensureFileId(fileId))
-						.setObjectId(fileId)
+						setId(context.ensureFileId(id))
+						.setObjectId(id)
 						.setFileName(file.get(fileName))
 						.setFileFormat(fileFormat)
 						.setFileSize(file.getSize())
