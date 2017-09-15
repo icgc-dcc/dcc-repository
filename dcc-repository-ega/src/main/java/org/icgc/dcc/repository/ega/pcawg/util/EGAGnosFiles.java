@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.ega.pcawg.util;
 
 import static lombok.AccessLevel.PRIVATE;
+import static org.icgc.dcc.common.core.json.Jackson.DEFAULT;
 
 import org.icgc.dcc.repository.ega.pcawg.model.EGAGnosFile;
 
@@ -26,12 +27,19 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @NoArgsConstructor(access = PRIVATE)
 public final class EGAGnosFiles {
 
   public static ArrayNode getFiles(@NonNull EGAGnosFile gnosFile) {
-    return (ArrayNode) at(gnosFile, "/ResultSet/Result/files/file");
+    try {
+      return (ArrayNode) at(gnosFile, "/ResultSet/Result/files/file");
+    } catch (ClassCastException e) {
+      log.warn("Should be array node!: {}", gnosFile.getAnalysisId());
+      return DEFAULT.createArrayNode().add(at(gnosFile, "/ResultSet/Result/files/file"));
+    }
   }
 
   public static long getFileSize(@NonNull JsonNode file) {
