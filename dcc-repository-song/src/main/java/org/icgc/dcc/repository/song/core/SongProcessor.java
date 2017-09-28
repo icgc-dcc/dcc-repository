@@ -17,15 +17,11 @@
  */
 package org.icgc.dcc.repository.song.core;
 
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.common.collect.ImmutableList;
-import com.sun.org.apache.bcel.internal.generic.IMUL;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.core.RepositoryFileProcessor;
 
 import org.icgc.dcc.repository.core.model.Repository;
@@ -33,10 +29,8 @@ import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.model.RepositoryFile.*;
 import org.icgc.dcc.repository.song.model.*;
 
-import static java.time.format.DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 import static java.util.Collections.singletonList;
 
-import java.time.Instant;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -79,8 +73,9 @@ public class SongProcessor extends RepositoryFileProcessor {
 		}
 
 		public Stream<RepositoryFile> convertFiles(SongAnalysis analysis) {
-				return analysis.getFiles().stream().
-						filter(f -> !isIndexFile(f.get(fileName))).
+				val files = analysis.getFiles().stream();
+
+				return files.filter(f -> isDataFile(f)).
 						map(f -> convert(f, analysis));
 		}
 
@@ -92,7 +87,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setId(context.ensureFileId(id))
 						.setObjectId(id)
 						.setStudy(ImmutableList.of("PCAWG"))
-						.setAccess(FileAccess.CONTROLLED)
+						.setAccess(f.get(fileAccess))
 						.setDataBundle(getDataBundle(a))
 						.setAnalysisMethod(getAnalysisMethod(a))
 						.setDataCategorization(getDataCategorization(a,f))
@@ -101,10 +96,6 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setDonors(getDonors(a));
 
 				return repoFile;
-		}
-
-		List<String> getStudies(SongAnalysis a) {
-				return ImmutableList.of(a.getStudy().get(studyId));
 		}
 
 		DataBundle getDataBundle(SongAnalysis a) {
@@ -189,16 +180,21 @@ public class SongProcessor extends RepositoryFileProcessor {
 		List<FileCopy> getFileCopies(SongAnalysis a, SongFile f) {
 				return ImmutableList.of(getFileCopy(a,f));
 		}
-
 		FileCopy getFileCopy(SongAnalysis a, SongFile f) {
+				val id = a.get(analysisId);
 				val fileId = f.get(objectId);
+				val name = f.get(fileName);
+
+				val indexFile = getIndexFile(a.getFiles(), name);
+
+
 				return new FileCopy()
-						.setFileName(f.get(fileName))
+						.setFileName(name)
 						.setFileFormat(f.get(fileType))
 						.setFileSize(f.getSize())
 						.setFileMd5sum(f.get(fileMd5sum))
 						.setLastModified(null)
-						.setRepoDataBundleId(a.get(analysisId))
+						.setRepoDataBundleId(id)
 						.setRepoFileId(fileId)
 						.setRepoType(repository.getType().getId())
 						.setRepoOrg(repository.getSource().getId())
@@ -207,9 +203,26 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setRepoCountry(repository.getCountry())
 						.setRepoBaseUrl(repository.getBaseUrl())
 						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId)
-						.setRepoMetadataPath(getRepoMetaDataPath(f))
-						.setIndexFile(getIndexFile(a.getFiles()))
+						.setRepoMetadataPath(repository.getType().getMetadataPath() + "/" + id)
+						.setIndexFile(indexFile)
 						;
+		}
+
+		IndexFile getIndexFile(List<SongFile> files, String name) {
+				SongFile i=null;
+				if (hasExtension(name,"BAM") ) {
+						i=getSongIndexFile(files, name + ".BAI");
+				}
+				if (hasExtension(name, "VCF")) {
+						i=getSongIndexFile(files, name + ".IDX");
+						if (i==null) {
+								i=getSongIndexFile(files, name + ".TCG");
+						}
+				}
+				if (i==null) {
+						return new IndexFile();
+				}
+				return createIndexFile(i);
 		}
 		List<Donor>	getDonors(SongAnalysis a) {
 				return ImmutableList.of(getDonor(a));
@@ -231,42 +244,38 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
 						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
 		}
-
-		String getRepoMetaDataPath(SongFile f) {
-				if (isXMLFile(f.get(fileName))) {
-						return repository.getType().getMetadataPath() + "/" + f.get(objectId);
+		String getRepoMetaDataPath(SongFile f, String xmlFile) {
+				if (xmlFile != null) {
+						return repository.getType().getMetadataPath() + "/" + xmlFile;
 				}
 				return null;
 		}
+		SongFile getSongIndexFile( List<SongFile> files, String name) {
+				val songIndex = files.stream().
+						filter(f->f.get(fileName).equalsIgnoreCase(name))
+						.findFirst().orElse(null);
 
-		IndexFile getIndexFile( List<SongFile> files) {
-				for (val f : files) {
-						val filename = f.get(fileName);
-						if (isBAIFile(filename)) {
-								return createIndexFile(f, "BAI");
-						} else if (isTBIFile(filename)) {
-								return createIndexFile(f, "TBI");
-						} else if (isIDXFile(filename)) {
-								return createIndexFile(f, "IDX");
-						}
+				if (songIndex==null) {
+						return null;
 				}
-				return new IndexFile();
-		}
 
-		IndexFile createIndexFile(SongFile file, String fileFormat) {
+				return songIndex;
+
+		}
+		IndexFile createIndexFile(SongFile file) {
 				val indexFile = new RepositoryFile.IndexFile();
 				val id = file.get(objectId);
+				val name = file.get(fileName);
+				val format = indexFileFormat(name);
 				indexFile.
 						setId(context.ensureFileId(id))
 						.setObjectId(id)
-						.setFileName(file.get(fileName))
-						.setFileFormat(fileFormat)
+						.setFileName(name)
+						.setFileFormat(format)
 						.setFileSize(file.getSize())
 						.setFileMd5sum(file.get(fileMd5sum));
 				return indexFile;
 		}
-
-
 		boolean hasExtension(String filename, String extension) {
 				String[] suffixes = { "", ".gz", ".zip", ".b2zip" };
 
@@ -283,6 +292,10 @@ public class SongProcessor extends RepositoryFileProcessor {
 						}
 				}
 				return false;
+		}
+		boolean isDataFile(SongFile f) {
+				val name = f.get(fileName);
+				return !(isIndexFile(name) || isXMLFile(name));
 		}
 
 		boolean isXMLFile(String filename) {
@@ -302,11 +315,24 @@ public class SongProcessor extends RepositoryFileProcessor {
 		}
 
 		boolean isIndexFile(String filename) {
-				if (isXMLFile(filename) || isBAIFile(filename) || isIDXFile(filename) ||
-						isTBIFile(filename)) {
+				if (isBAIFile(filename) || isIDXFile(filename) || isTBIFile(filename)) {
 						return true;
 				}
 				return false;
+		}
+
+		String indexFileFormat(String fileName) {
+				if (isBAIFile(fileName)) {
+						return "BAI";
+				}
+				if (isTBIFile(fileName)) {
+						return "TBI";
+				}
+				if (isIDXFile(fileName)) {
+						return "IDX";
+				}
+
+				return null;
 		}
 
 		public static String resolveVariantCallingDataType(String fileName) {

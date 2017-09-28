@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongFile extends JsonContainer {
 
-    public enum Field { analysisId, studyId, objectId, fileName, fileType, fileSize, fileMd5sum}
+    public enum Field { analysisId, studyId, objectId, fileName, fileType, fileSize, fileMd5sum, fileAccess}
 
     SongFile(JsonNode j) {
         super(j);
