@@ -73,15 +73,13 @@ public class SongProcessor extends RepositoryFileProcessor {
 		}
 
 		public Stream<RepositoryFile> convertFiles(SongAnalysis analysis) {
-				val files = analysis.getFiles().stream();
-
-				return files.filter(f -> isDataFile(f)).
+				return analysis.getFiles().stream().
+						filter(f -> isDataFile(f)).
 						map(f -> convert(f, analysis));
 		}
 
 		private RepositoryFile convert(SongFile f, SongAnalysis a) {
 				val id = f.get(objectId);
-
 
 				val repoFile = new RepositoryFile()
 						.setId(context.ensureFileId(id))
@@ -154,6 +152,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setDataType(getDataType(a,f))
 						.setExperimentalStrategy(getExperimentalStrategy(a));
 		}
+
 		String getDataType(SongAnalysis a, SongFile f) {
 				if (isSequencingRead(a)) {
 						return RepositoryFile.DataType.ALIGNED_READS;
@@ -166,6 +165,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 
 				return null;
 		}
+
 		String getExperimentalStrategy(SongAnalysis a) {
 				if (isSequencingRead(a)) {
 						return getSequencingRead(a).get(libraryStrategy);
@@ -177,16 +177,18 @@ public class SongProcessor extends RepositoryFileProcessor {
 				log.warn("Invalid analysis type for" + a + ", setting experimentalStrategy to null");
 				return null;
 		}
+
 		List<FileCopy> getFileCopies(SongAnalysis a, SongFile f) {
 				return ImmutableList.of(getFileCopy(a,f));
 		}
+
 		FileCopy getFileCopy(SongAnalysis a, SongFile f) {
 				val id = a.get(analysisId);
 				val fileId = f.get(objectId);
 				val name = f.get(fileName);
 
 				val indexFile = getIndexFile(a.getFiles(), name);
-
+				val metadataPath = getMetadataPath(a);
 
 				return new FileCopy()
 						.setFileName(name)
@@ -203,9 +205,15 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setRepoCountry(repository.getCountry())
 						.setRepoBaseUrl(repository.getBaseUrl())
 						.setRepoDataPath(repository.getType().getDataPath() + "/" + fileId)
-						.setRepoMetadataPath(repository.getType().getMetadataPath() + "/" + id)
+						.setRepoMetadataPath(repository.getType().getMetadataPath() + "/" + metadataPath)
 						.setIndexFile(indexFile)
 						;
+		}
+
+		String getMetadataPath(SongAnalysis a) {
+				val xmlFile = a.getFiles().stream().filter(f->isXMLFile(f.get(fileName))).findFirst().orElse(null);
+				if (xmlFile == null) { return ""; }
+				return xmlFile.get(objectId);
 		}
 
 		IndexFile getIndexFile(List<SongFile> files, String name) {
@@ -224,9 +232,11 @@ public class SongProcessor extends RepositoryFileProcessor {
 				}
 				return createIndexFile(i);
 		}
+
 		List<Donor>	getDonors(SongAnalysis a) {
 				return ImmutableList.of(getDonor(a));
 		}
+
 		Donor getDonor(SongAnalysis a) {
 				val study = a.getStudy();
 				val sample = a.getFirstSample();
@@ -244,12 +254,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setSubmittedSpecimenId(singletonList(specimen.get(specimenSubmitterId)))
 						.setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
 		}
-		String getRepoMetaDataPath(SongFile f, String xmlFile) {
-				if (xmlFile != null) {
-						return repository.getType().getMetadataPath() + "/" + xmlFile;
-				}
-				return null;
-		}
+
 		SongFile getSongIndexFile( List<SongFile> files, String name) {
 				val songIndex = files.stream().
 						filter(f->f.get(fileName).equalsIgnoreCase(name))
@@ -262,6 +267,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 				return songIndex;
 
 		}
+
 		IndexFile createIndexFile(SongFile file) {
 				val indexFile = new RepositoryFile.IndexFile();
 				val id = file.get(objectId);
@@ -276,6 +282,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setFileMd5sum(file.get(fileMd5sum));
 				return indexFile;
 		}
+
 		boolean hasExtension(String filename, String extension) {
 				String[] suffixes = { "", ".gz", ".zip", ".b2zip" };
 
@@ -293,6 +300,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 				}
 				return false;
 		}
+
 		boolean isDataFile(SongFile f) {
 				val name = f.get(fileName);
 				return !(isIndexFile(name) || isXMLFile(name));
