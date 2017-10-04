@@ -199,7 +199,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 						.setRepoDataBundleId(id)
 						.setRepoFileId(fileId)
 						.setRepoType(repository.getType().getId())
-						.setRepoOrg(repository.getSource().getId())
+						.setRepoOrg(repository.getOrganization())
 						.setRepoName(repository.getName())
 						.setRepoCode(repository.getCode())
 						.setRepoCountry(repository.getCountry())

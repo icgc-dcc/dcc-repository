@@ -94,11 +94,9 @@ public class SongClient {
     JsonNode readJson(URL url) {
         val connection = url.openConnection();
         if (songToken != null) {
-          log.info("Setting token =" + songToken);
           connection.setRequestProperty("Authorization", "Bearer " + songToken);
-        } else {
-          log.info("No token set!");
         }
+        log.info("Reading from " + url.toExternalForm());
         return MAPPER.readTree(connection.getInputStream());
     }
 
