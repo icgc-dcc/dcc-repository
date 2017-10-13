@@ -22,6 +22,7 @@ import static org.icgc.dcc.repository.core.model.RepositorySource.PCAWG;
 
 import java.util.Comparator;
 
+import lombok.val;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.model.RepositoryFile.FileCopy;
 
@@ -40,7 +41,16 @@ public final class RepositoryFiles {
   }
 
   public static boolean isPCAWGFileCopy(@NonNull FileCopy fileCopy) {
-    return fileCopy.getRepoOrg().equals(PCAWG.getId());
+    if (fileCopy == null) {
+      return false;
+    }
+
+    val repo = fileCopy.getRepoOrg();
+
+    if (repo == null) {
+      return false;
+    }
+    return repo.equals(PCAWG.getId());
   }
 
   public static String qualifyDonorId(String projectCode, String submittedDonorId) {
