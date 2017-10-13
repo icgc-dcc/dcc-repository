@@ -25,7 +25,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </parent>
 
   <artifactId>dcc-repository</artifactId>
-  <version>1.1.6-SNAPSHOT</version>
+  <version>1.1.8-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
@@ -172,7 +172,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <properties>
     <!-- Versions - DCC -->
     <!-- TODO: Set to a release version when we go into production. -->
-    <dcc-common.version>4.3.11-SNAPSHOT</dcc-common.version>
+    <dcc-common.version>4.3.11</dcc-common.version>
     <dcc-id.version>4.0.1</dcc-id.version>
 
     <!-- Versions - Git -->
