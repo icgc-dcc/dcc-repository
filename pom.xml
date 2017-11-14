@@ -65,7 +65,6 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
 
   <dependencyManagement>
     <dependencies>
-
       <!-- DCC - Common -->
       <dependency>
         <groupId>${project.groupId}</groupId>
@@ -84,6 +83,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
         <artifactId>dcc-id-client</artifactId>
         <version>${dcc-id.version}</version>
       </dependency>
+
 
       <!-- DCC - Repository -->
       <dependency>
@@ -171,7 +171,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   <properties>
     <!-- Versions - DCC -->
     <!-- TODO: Set to a release version when we go into production. -->
-    <dcc-common.version>4.3.11</dcc-common.version>
+    <dcc-common.version>5.0.0</dcc-common.version>
     <dcc-id.version>4.0.1</dcc-id.version>
 
     <!-- Versions - Git -->
