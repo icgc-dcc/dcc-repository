@@ -23,69 +23,67 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-
-
 public class SongAnalysis extends JsonContainer {
-    public enum Field { analysisId, analysisType, analysisState}
+  private final static String SAMPLES = "sample";
+  private final static String EXPERIMENT = "experiment";
+  private final static String FILES = "file";
+  private List<SongFile> files;
+  private List<SongSample> samples;
+  private SongExperiment experiment;
+  private SongStudy study;
+  public SongAnalysis(JsonNode json, JsonNode study) {
+    super(json);
+    setFiles(from(FILES));
+    setSamples(from(SAMPLES));
+    setExperiment(get(Field.analysisType), from(EXPERIMENT));
+    this.study = new SongStudy(study);
+  }
 
-    private final static String SAMPLES ="sample";
-    private final static String EXPERIMENT="experiment";
-    private final static String FILES="file";
+  public List<SongSample> getSamples() {
+    return Collections.unmodifiableList(samples);
+  }
 
-    private List<SongFile> files;
-    private List<SongSample> samples;
-    private SongExperiment experiment;
-    private SongStudy study;
+  private void setSamples(JsonNode s) {
+    assert s.isArray();
+    samples = new ArrayList<>();
+    s.elements().forEachRemaining(node -> samples.add(new SongSample(node)));
+  }
 
-    public SongAnalysis(JsonNode json, JsonNode study) {
-        super(json);
-        setFiles(from(FILES));
-        setSamples(from(SAMPLES));
-        setExperiment(get(Field.analysisType), from(EXPERIMENT));
-        this.study=new SongStudy(study);
+  public SongSample getFirstSample() {
+    return samples.get(0);
+  }
+
+  public List<SongFile> getFiles() {
+    return Collections.unmodifiableList(files);
+  }
+
+  private void setFiles(JsonNode f) {
+    assert f.isArray();
+    files = new ArrayList<>();
+    f.elements().forEachRemaining(node -> files.add(new SongFile(node)));
+  }
+
+  public SongStudy getStudy() {
+    return study;
+  }
+
+  public SongExperiment getExperiment() {
+    return experiment;
+  }
+
+  private void setExperiment(String type, JsonNode e) {
+    if (type.equals(SongSequencingRead.TYPE)) {
+      experiment = new SongSequencingRead(e);
+    } else if (type.equals(SongVariantCall.TYPE)) {
+      experiment = new SongVariantCall(e);
     }
+  }
 
-    private void setFiles(JsonNode f) {
-        assert f.isArray();
-        files = new ArrayList<>();
-        f.elements().forEachRemaining(node->files.add(new SongFile(node)));
-    }
+  public String get(Field f) {
+    return get(f.toString());
+  }
 
-    private void setSamples(JsonNode s) {
-        assert s.isArray();
-        samples = new ArrayList<>();
-        s.elements().forEachRemaining(node->samples.add(new SongSample(node)));
-    }
-
-    public List<SongSample> getSamples() {
-        return Collections.unmodifiableList(samples);
-    }
-
-    public SongSample getFirstSample()  {
-        return samples.get(0);
-    }
-
-    public List<SongFile> getFiles() {
-        return Collections.unmodifiableList(files);
-    }
-
-    public SongStudy getStudy() { return study; }
-
-    public SongExperiment getExperiment() {
-        return experiment;
-    }
-
-    private void setExperiment(String type, JsonNode e) {
-        if (type.equals(SongSequencingRead.TYPE)) {
-            experiment = new SongSequencingRead(e);
-        } else if (type.equals(SongVariantCall.TYPE)) {
-            experiment = new SongVariantCall(e);
-        }
-    }
-
-    public String get(Field f) {
-        return get(f.toString());
-    }
+  public enum Field {analysisId, analysisType, analysisState}
 
 }
 

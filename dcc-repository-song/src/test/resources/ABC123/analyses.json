@@ -3,15 +3,13 @@
     "analysisType": "variantCall",
     "info": "{}",
     "analysisId": "AN1",
-    "study":
-      {
-        "info": "{}",
-        "studyId": "ABC123",
-        "name": "X1-CA",
-        "organization": "Sample Data Research Institute",
-        "description": "A fictional study"
-      }
-    ,
+    "study": {
+      "info": "{}",
+      "studyId": "ABC123",
+      "name": "X1-CA",
+      "organization": "Sample Data Research Institute",
+      "description": "A fictional study"
+    },
     "analysisState": "UNPUBLISHED",
     "sample": [
       {

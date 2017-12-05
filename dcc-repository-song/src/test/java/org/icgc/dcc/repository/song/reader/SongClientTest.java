@@ -30,32 +30,32 @@ import java.net.URL;
 @Slf4j
 @Ignore("For development only")
 public class SongClientTest {
-  
+
   SongClient c;
 
   @SneakyThrows
   @Before
-  public void setup()  {
-    c = new SongClient(new URL("http://localhost:8080"),null);
+  public void setup() {
+    c = new SongClient(new URL("http://localhost:8080"), null);
   }
 
   @Test
   public void testExecute() throws IOException {
     val node = c.readJson("http://localhost:8080/studies/ABC123/all");
     val json = node.toString();
-    log.info("json="+json);
+    log.info("json=" + json);
   }
 
   @Test
   public void testGetStudies() throws IOException {
     val node = c.getStudies();
-    log.info("json="+node.toString());
+    log.info("json=" + node.toString());
   }
 
   @Test
   public void testGetStudyNode() throws IOException {
     val node = c.getStudy("ABC123");
-    log.info("json="+node.toString());
+    log.info("json=" + node.toString());
   }
 
   @Test

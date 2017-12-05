@@ -17,19 +17,17 @@
  */
 package org.icgc.dcc.repository.song;
 
+import lombok.NonNull;
+import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.util.GenericRepositorySourceFileImporter;
-
-import lombok.NonNull;
-import lombok.SneakyThrows;
-import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 import org.icgc.dcc.repository.song.reader.SongClient;
-
 
 @Slf4j
 public class SongImporter extends GenericRepositorySourceFileImporter {
@@ -39,7 +37,7 @@ public class SongImporter extends GenericRepositorySourceFileImporter {
   private final SongProcessor processor;
 
   public SongImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
-                      SongClient reader, SongProcessor processor) {
+    SongClient reader, SongProcessor processor) {
     super(repository.getSource(), context, log);
     this.reader = reader;
     this.processor = processor;

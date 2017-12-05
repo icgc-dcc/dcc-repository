@@ -21,15 +21,16 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongVariantCall extends SongExperiment {
 
-    public final static String TYPE="variantCall";
-    public enum Field {variantCallingTool}
+  public final static String TYPE = "variantCall";
 
-    SongVariantCall(JsonNode j) {
-        super(j);
-    }
+  SongVariantCall(JsonNode j) {
+    super(j);
+  }
 
-    public String get(Field f) {
-        return get(f.toString());
-    }
+  public String get(Field f) {
+    return get(f.toString());
+  }
+
+  public enum Field {variantCallingTool}
 
 }
