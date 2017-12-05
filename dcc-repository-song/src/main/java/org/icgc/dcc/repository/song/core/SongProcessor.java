@@ -35,6 +35,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.StreamSupport.stream;
 import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisId;
@@ -106,7 +107,7 @@ public class SongProcessor extends RepositoryFileProcessor {
     val repoFile = new RepositoryFile()
       .setId(context.ensureFileId(id))
       .setObjectId(id)
-      .setStudy(ImmutableList.of("PCAWG"))
+      .setStudy(null)
       .setAccess(f.get(fileAccess))
       .setDataBundle(getDataBundle(a))
       .setAnalysisMethod(getAnalysisMethod(a))
@@ -114,6 +115,9 @@ public class SongProcessor extends RepositoryFileProcessor {
       .setReferenceGenome(ReferenceGenome.PCAWG)
       .setFileCopies(getFileCopies(a, f))
       .setDonors(getDonors(a));
+
+    assignStudy(singleton(repoFile));
+    assignIds(singleton(repoFile));
 
     return repoFile;
   }
@@ -176,7 +180,8 @@ public class SongProcessor extends RepositoryFileProcessor {
 
   String getDataType(SongAnalysis a, SongFile f) {
     if (isSequencingRead(a)) {
-      return RepositoryFile.DataType.ALIGNED_READS;
+      return resolveSequencingReadDataType(a, f);
+
     }
     if (isVariantCall(a)) {
       return resolveVariantCallingDataType(f.get(fileName));
@@ -184,6 +189,26 @@ public class SongProcessor extends RepositoryFileProcessor {
 
     log.warn("Invalid analysis type for " + a + ", setting data type to null");
 
+    return null;
+  }
+
+  private String resolveSequencingReadDataType(SongAnalysis a, SongFile f) {
+    val name = f.get(fileName);
+    val type = f.get(fileType);
+    if (type.equals("FASTA")) {
+      return RepositoryFile.DataType.UNALIGNED_READS;
+    } else if (type.equals("BAM")) {
+      val experiment = getSequencingRead(a);
+      val aligned = experiment.isAligned();
+      if (aligned == null) {
+        return RepositoryFile.DataType.SEQUENCING_READS;
+      }
+      if (aligned) {
+        return DataType.ALIGNED_READS;
+      }
+      return DataType.UNALIGNED_READS;
+
+    }
     return null;
   }
 
@@ -266,7 +291,7 @@ public class SongProcessor extends RepositoryFileProcessor {
     val donor = sample.getDonor();
     val specimen = sample.getSpecimen();
     return new Donor()
-      .setStudy("PCAWG")
+      .setStudy(null)
       .setProjectCode(study.get(studyId))
       .setPrimarySite(context.getPrimarySite(study.get(studyId)))
       .setDonorId(null)

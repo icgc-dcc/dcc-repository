@@ -27,7 +27,7 @@ public class SongSequencingRead extends SongExperiment {
     super(j);
   }
 
-  public boolean isAligned() {
+  public Boolean isAligned() {
     return getBoolean("aligned");
   }
 

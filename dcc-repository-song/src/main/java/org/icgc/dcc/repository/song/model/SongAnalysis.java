@@ -31,6 +31,7 @@ public class SongAnalysis extends JsonContainer {
   private List<SongSample> samples;
   private SongExperiment experiment;
   private SongStudy study;
+
   public SongAnalysis(JsonNode json, JsonNode study) {
     super(json);
     setFiles(from(FILES));
