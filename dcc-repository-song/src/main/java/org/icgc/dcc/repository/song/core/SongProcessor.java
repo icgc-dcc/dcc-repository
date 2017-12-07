@@ -129,7 +129,7 @@ public class SongProcessor extends RepositoryFileProcessor {
 
   AnalysisMethod getAnalysisMethod(SongAnalysis a) {
     return new AnalysisMethod()
-      .setSoftware("No Data")
+      .setSoftware(getSoftware(a))
       .setAnalysisType(getAnalysisType(a));
   }
 
