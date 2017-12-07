@@ -45,6 +45,7 @@ import static org.icgc.dcc.repository.song.model.SongFile.Field.*;
 import static org.icgc.dcc.repository.song.model.SongSample.Field.sampleSubmitterId;
 import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.alignmentTool;
 import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.libraryStrategy;
+import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.referenceGenome;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.specimenSubmitterId;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.specimenType;
 import static org.icgc.dcc.repository.song.model.SongStudy.Field.studyId;
@@ -112,7 +113,7 @@ public class SongProcessor extends RepositoryFileProcessor {
       .setDataBundle(getDataBundle(a))
       .setAnalysisMethod(getAnalysisMethod(a))
       .setDataCategorization(getDataCategorization(a, f))
-      .setReferenceGenome(ReferenceGenome.PCAWG)
+      .setReferenceGenome(getReferenceGenome(a))
       .setFileCopies(getFileCopies(a, f))
       .setDonors(getDonors(a));
 
@@ -128,19 +129,18 @@ public class SongProcessor extends RepositoryFileProcessor {
 
   AnalysisMethod getAnalysisMethod(SongAnalysis a) {
     return new AnalysisMethod()
-      .setAnalysisType(getAnalysisType(a))
-      .setSoftware(getSoftware(a));
+      .setSoftware("No Data")
+      .setAnalysisType(getAnalysisType(a));
   }
 
   String getAnalysisType(SongAnalysis a) {
-    if (isSequencingRead(a)) {
+    if (!isSequencingRead(a)) {
+      return null;
+    }
+    val experiment = getSequencingRead(a);
+    if ( experiment.isAligned()) {
       return "Reference alignment";
     }
-    if (isVariantCall(a)) {
-      return "Variant calling";
-    }
-
-    log.warn("Invalid analysis type for " + a + ", setting analysis type to null");
     return null;
   }
 
@@ -154,6 +154,26 @@ public class SongProcessor extends RepositoryFileProcessor {
     }
     log.warn("Invalid  analysis type for " + a + "setting software to null");
     return null;
+  }
+
+  ReferenceGenome getReferenceGenome(SongAnalysis a) {
+    String build = getReferenceGenomeBuild(a);
+    val referenceGenome = new ReferenceGenome().
+      setDownloadUrl(null).setReferenceName(null).
+      setGenomeBuild(build);
+    return referenceGenome;
+  }
+
+  String getReferenceGenomeBuild(SongAnalysis a) {
+    if (!isSequencingRead(a)) {
+      return null; // variant call doesn't have this field
+    }
+    val r = getSequencingRead(a);
+    val build = r.get(referenceGenome);
+    if ("".equals(build)) {
+      return null;
+    }
+    return build;
   }
 
   boolean isVariantCall(SongAnalysis a) {
@@ -181,7 +201,6 @@ public class SongProcessor extends RepositoryFileProcessor {
   String getDataType(SongAnalysis a, SongFile f) {
     if (isSequencingRead(a)) {
       return resolveSequencingReadDataType(a, f);
-
     }
     if (isVariantCall(a)) {
       return resolveVariantCallingDataType(f.get(fileName));
@@ -192,24 +211,24 @@ public class SongProcessor extends RepositoryFileProcessor {
     return null;
   }
 
-  private String resolveSequencingReadDataType(SongAnalysis a, SongFile f) {
-    val name = f.get(fileName);
+  String resolveSequencingReadDataType(SongAnalysis a, SongFile f) {
     val type = f.get(fileType);
-    if (type.equals("FASTA")) {
-      return RepositoryFile.DataType.UNALIGNED_READS;
-    } else if (type.equals("BAM")) {
-      val experiment = getSequencingRead(a);
-      val aligned = experiment.isAligned();
-      if (aligned == null) {
-        return RepositoryFile.DataType.SEQUENCING_READS;
-      }
-      if (aligned) {
-        return DataType.ALIGNED_READS;
-      }
-      return DataType.UNALIGNED_READS;
+    val aligned = getSequencingRead(a).isAligned();
 
+    return sequencingReadDataType(type, aligned);
+  }
+
+  String sequencingReadDataType(String type, Boolean aligned) {
+    if (type.equals("FASTA") || type.equals("FASTQ")) {
+      return RepositoryFile.DataType.UNALIGNED_READS;
     }
-    return null;
+    if (aligned == null) {
+      return RepositoryFile.DataType.SEQUENCING_READS;
+    }
+    if (aligned) {
+      return DataType.ALIGNED_READS;
+    }
+    return DataType.UNALIGNED_READS;
   }
 
   String getExperimentalStrategy(SongAnalysis a) {

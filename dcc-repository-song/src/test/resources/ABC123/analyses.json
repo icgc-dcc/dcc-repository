@@ -143,7 +143,7 @@
         "fileName": "ABC-TC285-G7-B9.vcf.idx",
         "studyId": "ABC123",
         "fileSize": 12345,
-        "fileType": "FAI",
+        "fileType": "FASTQ",
         "fileMd5sum": "1ad22383391004fd12441f39ba7f2380",
         "fileAccess": "Public"
       },

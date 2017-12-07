@@ -21,7 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 public class SongFile extends JsonContainer {
 
-  SongFile(JsonNode j) {
+  public SongFile(JsonNode j) {
     super(j);
   }
 
