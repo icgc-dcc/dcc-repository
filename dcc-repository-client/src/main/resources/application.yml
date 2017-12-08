@@ -35,7 +35,7 @@ spring:
 
 # Repository
 repository:
-  sources: SONG,PCAWG,AWS,COLLAB,TCGA,CGHUB
+  sources: COLLAB,PCAWG,AWS,COLLAB,TCGA,CGHUB
   steps: IMPORT,MERGE,INDEX
   indexAlias: icgc-repository
 

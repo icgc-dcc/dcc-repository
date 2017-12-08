@@ -87,7 +87,7 @@ public class RepositoryFileFilter {
   }
 
   private static boolean inSong(Set<Repository> repositories) {
-    return repositories.stream().anyMatch(r -> r.getSource() == RepositorySource.SONG);
+    return repositories.stream().anyMatch(r -> r.getSource() == RepositorySource.COLLAB);
   }
 
   private static boolean inPCAWG(Set<Repository> repositories) {

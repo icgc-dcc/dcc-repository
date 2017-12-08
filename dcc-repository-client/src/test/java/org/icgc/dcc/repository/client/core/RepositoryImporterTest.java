@@ -46,7 +46,7 @@ public class RepositoryImporterTest {
 
   @Test
   public void testSong() throws IOException {
-    val importer = createImporter(SONG);
+    val importer = createImporter(COLLAB);
     importer.execute();
   }
 

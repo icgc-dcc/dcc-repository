@@ -21,11 +21,14 @@ import lombok.val;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
 
 import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+
+@Ignore("For development only -- requires mongod to be running on localhost")
 
 public class SONGImporterTest {
 
