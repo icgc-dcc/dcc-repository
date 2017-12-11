@@ -15,56 +15,53 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.collab;
+package org.icgc.dcc.repository.song.reader;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.COLLAB_OLD;
-
-import java.io.File;
-
-import org.icgc.dcc.repository.cloud.CloudImporter;
-import org.icgc.dcc.repository.cloud.core.CloudFileProcessor;
-import org.icgc.dcc.repository.cloud.s3.CloudS3BucketReader;
-import org.icgc.dcc.repository.cloud.transfer.CloudTransferJobReader;
-import org.icgc.dcc.repository.collab.s3.AWSClientFactory;
-import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.Repositories;
-
-import lombok.NonNull;
-import lombok.val;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.net.URL;
 
 @Slf4j
-public class CollabImporter extends CloudImporter {
+@Ignore("For development only")
+public class SongClientTest {
 
-  /**
-   * Constants.
-   */
-  private static final String BUCKET_NAME = "oicr.icgc";
-  private static final String BUCKET_KEY_PREFIX = "data";
+  SongClient c;
 
-  private static final String GIT_REPO_URL = "https://github.com/ICGC-TCGA-PanCancer/ceph_transfer_ops.git";
-  private static final String GIT_REPO_DIR_GLOB = "ceph-transfer-jobs*";
-  private static final File GIT_REPO_DIR = new File("/tmp/dcc-repository-collab");
-
-  public CollabImporter(@NonNull RepositoryFileContext context) {
-    super(COLLAB_OLD, context, log);
+  @SneakyThrows
+  @Before
+  public void setup() {
+    c = new SongClient(new URL("http://localhost:8080"), null);
   }
 
-  @Override
-  protected CloudTransferJobReader createJobReader() {
-    return new CloudTransferJobReader(GIT_REPO_URL, GIT_REPO_DIR, GIT_REPO_DIR_GLOB);
+  @Test
+  public void testExecute() throws IOException {
+    val node = c.readJson("http://localhost:8080/studies/ABC123/all");
+    val json = node.toString();
+    log.info("json=" + json);
   }
 
-  @Override
-  protected CloudS3BucketReader createBucketReader() {
-    val s3 = AWSClientFactory.createS3Client();
-    return new CloudS3BucketReader(BUCKET_NAME, BUCKET_KEY_PREFIX, s3);
+  @Test
+  public void testGetStudies() throws IOException {
+    val node = c.getStudies();
+    log.info("json=" + node.toString());
   }
 
-  @Override
-  protected CloudFileProcessor createFileProcessor() {
-    val collabRepository = Repositories.getCollabRepository();
-    return new CloudFileProcessor(context, collabRepository);
+  @Test
+  public void testGetStudyNode() throws IOException {
+    val node = c.getStudy("ABC123");
+    log.info("json=" + node.toString());
+  }
+
+  @Test
+  public void testReadAnalysis() {
+    val r = c.readAnalyses();
+    log.info("Found these analyses:" + r.toString());
   }
 
 }

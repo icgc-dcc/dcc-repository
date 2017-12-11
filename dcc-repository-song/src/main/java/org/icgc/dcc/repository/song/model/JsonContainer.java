@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,50 +15,40 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.client.core;
+package org.icgc.dcc.repository.song.model;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.*;
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+import com.fasterxml.jackson.databind.JsonNode;
 
-import java.io.IOException;
+public abstract class JsonContainer {
+  private final JsonNode json;
 
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.repository.core.model.RepositorySource;
-import org.junit.Ignore;
-import org.junit.Test;
-
-import lombok.val;
-
-@Ignore("For development only")
-public class RepositoryImporterTest {
-
-  @Test
-  public void testExecuteAll() throws IOException {
-    val importer = createImporter();
-    importer.execute();
+  JsonContainer(JsonNode json) {
+    assert json.isObject();
+    this.json = json;
   }
 
-  @Test
-  public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(AWS, PCAWG);
-    importer.execute();
+  String get(String key) {
+    return json.at("/" + key).asText();
   }
 
-  @Test
-  public void testSong() throws IOException {
-    val importer = createImporter(COLLAB);
-    importer.execute();
+  long getLong(String key) {
+    return json.at("/" + key).asLong(0);
   }
 
-  @Test
-  public void testExecuteGDCFiltering() throws IOException {
-    val importer = createImporter(GDC);
-    importer.execute();
+  JsonNode from(String key) {
+    return json.at("/" + key);
   }
 
-  private static RepositoryImporter createImporter(RepositorySource... sources) {
-    val context = newLocalRepositoryFileContext(sources);
-    return new RepositoryImporter(context, Mailer.builder().enabled(false).build());
+  boolean getBoolean(String key) {
+    return json.at("/" + key).asBoolean();
   }
 
+  public JsonNode getInfo() {
+    return from("info");
+  }
+
+  @Override
+  public String toString() {
+    return json.toString();
+  }
 }

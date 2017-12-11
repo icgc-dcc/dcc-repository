@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2016 The Ontario Institute for Cancer Research. All rights reserved.                             
+ * Copyright (c) 2017 The Ontario Institute for Cancer Research. All rights reserved.                             
  *                                                                                                               
  * This program and the accompanying materials are made available under the terms of the GNU Public License v3.0.
  * You should have received a copy of the GNU General Public License along with                                  
@@ -15,50 +15,42 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.client.core;
+package org.icgc.dcc.repository.song.reader;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.*;
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.io.Resources;
 
-import java.io.IOException;
+import java.net.URL;
 
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.repository.core.model.RepositorySource;
-import org.junit.Ignore;
-import org.junit.Test;
+public class MockSongClient extends SongClient {
 
-import lombok.val;
+  private String analysesURL;
+  private String studyURL;
+  private URL studiesURL;
 
-@Ignore("For development only")
-public class RepositoryImporterTest {
-
-  @Test
-  public void testExecuteAll() throws IOException {
-    val importer = createImporter();
-    importer.execute();
+  public MockSongClient(String analysesFile, String studyFile, String studiesFile) {
+    analysesURL = analysesFile;
+    studyURL = studyFile;
+    studiesURL = resourceFile(studiesFile);
   }
 
-  @Test
-  public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(AWS, PCAWG);
-    importer.execute();
+  private URL resourceFile(String file) {
+    return Resources.getResource(file);
   }
 
-  @Test
-  public void testSong() throws IOException {
-    val importer = createImporter(COLLAB);
-    importer.execute();
+  @Override
+  JsonNode getStudy(String study) {
+    return readJson(resourceFile(study + "/" + studyURL));
   }
 
-  @Test
-  public void testExecuteGDCFiltering() throws IOException {
-    val importer = createImporter(GDC);
-    importer.execute();
+  @Override
+  JsonNode getStudies() {
+    return readJson(studiesURL);
   }
 
-  private static RepositoryImporter createImporter(RepositorySource... sources) {
-    val context = newLocalRepositoryFileContext(sources);
-    return new RepositoryImporter(context, Mailer.builder().enabled(false).build());
+  @Override
+  JsonNode getAnalyses(String study) {
+    return readJson(resourceFile(study + "/" + analysesURL));
   }
 
 }

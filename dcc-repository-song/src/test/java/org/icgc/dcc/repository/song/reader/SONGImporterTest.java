@@ -15,50 +15,32 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.client.core;
+package org.icgc.dcc.repository.song.reader;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.*;
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
-
-import java.io.IOException;
-
-import org.icgc.dcc.common.core.mail.Mailer;
-import org.icgc.dcc.repository.core.model.RepositorySource;
+import lombok.val;
+import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.song.SongImporter;
+import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import lombok.val;
+import java.io.IOException;
 
-@Ignore("For development only")
-public class RepositoryImporterTest {
+import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
 
-  @Test
-  public void testExecuteAll() throws IOException {
-    val importer = createImporter();
-    importer.execute();
-  }
+@Ignore("For development only -- requires mongod to be running on localhost")
+
+public class SONGImporterTest {
 
   @Test
-  public void testExecuteSomeFast() throws IOException {
-    val importer = createImporter(AWS, PCAWG);
-    importer.execute();
-  }
+  public void testExecute() throws IOException {
+    val context = newLocalRepositoryFileContext();
+    val repository = Repositories.getSongRepository();
 
-  @Test
-  public void testSong() throws IOException {
-    val importer = createImporter(COLLAB);
+    val reader = new MockSongClient("analyses.json", "study.json", "studies.json");
+    val processor = new SongProcessor(context, repository);
+    val importer = new SongImporter(repository, context, reader, processor);
     importer.execute();
-  }
-
-  @Test
-  public void testExecuteGDCFiltering() throws IOException {
-    val importer = createImporter(GDC);
-    importer.execute();
-  }
-
-  private static RepositoryImporter createImporter(RepositorySource... sources) {
-    val context = newLocalRepositoryFileContext(sources);
-    return new RepositoryImporter(context, Mailer.builder().enabled(false).build());
   }
 
 }

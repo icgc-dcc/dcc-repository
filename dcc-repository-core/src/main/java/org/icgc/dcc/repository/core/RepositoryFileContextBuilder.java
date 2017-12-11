@@ -22,6 +22,7 @@ import static java.util.Collections.emptyMap;
 import static lombok.AccessLevel.PRIVATE;
 
 import java.net.URI;
+import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,6 +65,12 @@ public final class RepositoryFileContextBuilder {
   @Setter
   @Accessors(chain = true, fluent = true)
   private MongoClientURI repoMongoUri = getLocalMongoClientUri("dcc-repository");
+  @Setter
+  @Accessors(chain = true, fluent = true)
+  private URL songUrl = url("http://localhost:8080");
+  @Setter
+  @Accessors(chain = true, fluent=true)
+  private String songToken = "";
   @Setter
   @Accessors(chain = true, fluent = true)
   private URI esUri = URIs.getUri("es://localhost:9300");
@@ -111,7 +118,7 @@ public final class RepositoryFileContextBuilder {
     val idClient = createIdClient();
     val tcgaMappings = new TCGAMappingsReader().readMappings();
 
-    return new RepositoryFileContext(repoMongoUri, esUri, archiveUri, indexAlias, skipImport, sources, readOnly,
+    return new RepositoryFileContext(repoMongoUri, esUri, songUrl, songToken, archiveUri, indexAlias, skipImport, sources, readOnly,
         primarySites, idClient, tcgaMappings, pcawgIdResolver, dccIdResolver, report);
   }
 
@@ -136,6 +143,11 @@ public final class RepositoryFileContextBuilder {
 
   public static final MongoClientURI getLocalMongoClientUri(String db) {
     return new MongoClientURI(format(MONGO_URI_TEMPLATE, DEFAULT_MONGO_PORT, db));
+  }
+
+  @SneakyThrows
+  private URL url(String path) {
+    return new URL(path);
   }
 
 }

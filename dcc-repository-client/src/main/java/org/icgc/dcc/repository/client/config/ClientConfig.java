@@ -17,6 +17,7 @@
  */
 package org.icgc.dcc.repository.client.config;
 
+import lombok.SneakyThrows;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.repository.client.core.RepositoryImporter;
@@ -29,6 +30,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
 import lombok.val;
+
+import java.net.URL;
 
 @Configuration
 public class ClientConfig {
@@ -62,17 +65,19 @@ public class ClientConfig {
     context
         .idUrl(properties.getId().getServiceUrl())
         .authToken(properties.getId().getAuthToken())
-        .realIds(true);
+        .realIds(properties.getId().isEnabled());
 
     // Reference
     context
         .pcawgIdResolver(new PCAWGDonorIdResolver())
         .dccIdResolver(new DCCDonorIdResolver())
-        .importMongoUri(properties.getImports().getMongoUri());
-
+        .importMongoUri(properties.getImports().getMongoUri())
+        .songUrl(url(properties.getImports().getSongUrl()))
+        .songToken(properties.getImports().getSongToken());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())
+
         .esUri(properties.getRepository().getEsUri())
         .archiveUri(properties.getRepository().getArchiveUri())
         .indexAlias(properties.getRepository().getIndexAlias());
@@ -82,6 +87,11 @@ public class ClientConfig {
         .report(new BufferedReport());
 
     return context.build();
+  }
+
+  @SneakyThrows
+  private URL url(String path) {
+    return new URL(path);
   }
 
 }

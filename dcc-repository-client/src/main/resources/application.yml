@@ -35,7 +35,7 @@ spring:
 
 # Repository
 repository:
-  sources: PCAWG,AWS,COLLAB,TCGA,CGHUB
+  sources: COLLAB,PCAWG,AWS,COLLAB,TCGA,CGHUB
   steps: IMPORT,MERGE,INDEX
   indexAlias: icgc-repository
 
@@ -60,14 +60,17 @@ repository:
   esUri: es://localhost:9300
   archiveUri: file:///tmp/repository.tar.gz
   indexAlias: test-icgc-repository
-
 # Imports
 imports:
   mongoUri: mongodb://localhost/dcc-import
+  songUrl: http://localhost:8080
+  songToken: testing
 
 # ID
 id:
   serviceUrl: https://localhost:8443
+  enabled: false
+
 
 # Mail
 mail:

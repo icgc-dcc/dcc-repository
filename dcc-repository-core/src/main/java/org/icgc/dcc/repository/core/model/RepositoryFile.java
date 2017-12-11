@@ -272,7 +272,8 @@ public class RepositoryFile {
     public final String CLINICAL = "Clinical";
     public final String ALIGNED_READS = "Aligned Reads";
     public final String UNALIGNED_READS = "Unaligned Reads";
-
+    // BAM files that we don't know if are aligned or not...
+    public final String SEQUENCING_READS = "Sequencing Reads";
     // These are for TCGA because we cannot determine aligned status from file
     public final String DNA_SEQ = "DNA-Seq";
     public final String RNA_SEQ = "RNA-Seq";

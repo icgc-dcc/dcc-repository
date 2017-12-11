@@ -38,6 +38,7 @@ import org.icgc.dcc.repository.gdc.GDCImporter;
 import org.icgc.dcc.repository.index.core.RepositoryFileIndexer;
 import org.icgc.dcc.repository.pcawg.PCAWGImporter;
 import org.icgc.dcc.repository.pdc.PDCImporter;
+import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.tcga.TCGAImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -251,7 +252,8 @@ public class RepositoryImporter {
         new AWSImporter(context),
         new CollabImporter(context),
         new TCGAImporter(context),
-        new CGHubImporter(context));
+        new CGHubImporter(context),
+        new SongImporter(context));
   }
 
   private static void logStep(int stepNumber, int stepCount, String message) {
