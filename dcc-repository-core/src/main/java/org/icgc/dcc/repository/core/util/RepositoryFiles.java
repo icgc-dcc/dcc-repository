@@ -41,10 +41,6 @@ public final class RepositoryFiles {
   }
 
   public static boolean isPCAWGFileCopy(@NonNull FileCopy fileCopy) {
-    if (fileCopy == null) {
-      return false;
-    }
-
     val repo = fileCopy.getRepoOrg();
 
     if (repo == null) {
