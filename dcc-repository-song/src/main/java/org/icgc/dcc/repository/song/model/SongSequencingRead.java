@@ -18,6 +18,7 @@
 package org.icgc.dcc.repository.song.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import lombok.val;
 
 public class SongSequencingRead extends SongExperiment {
 
@@ -40,7 +41,10 @@ public class SongSequencingRead extends SongExperiment {
   }
 
   public String get(Field f) {
-    return get(f.toString());
+    // JsonContainer.get() returns empty String if key doesn't exist, in this case we want null to ensure we don't
+    //  index an empty facet value
+    val value = get(f.toString());
+    return value.isEmpty() ? null : value;
   }
 
   public enum Field {
