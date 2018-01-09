@@ -25,7 +25,6 @@ import org.icgc.dcc.repository.core.model.Repositories;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.repository.song.core.SongProcessor;
-import org.icgc.dcc.repository.song.reader.MockSongClient;
 import org.icgc.dcc.repository.song.reader.SongClient;
 
 
@@ -38,14 +37,6 @@ public class CollabImporter extends SongImporter {
       Repositories.getCollabRepository(),
       context.getCollabUrl(),
       context.getCollabToken());
-  }
-
-  public CollabImporter(@NonNull RepositoryFileContext context, @NonNull Repository repository, @NonNull MockSongClient client, @NonNull SongProcessor processor) {
-    super(
-      repository,
-      context,
-      client,
-      processor);
   }
 
 }
