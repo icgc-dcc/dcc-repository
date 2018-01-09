@@ -29,6 +29,7 @@ import org.icgc.dcc.common.core.report.ReportEmail;
 import org.icgc.dcc.repository.aws.AWSImporter;
 import org.icgc.dcc.repository.cghub.CGHubImporter;
 import org.icgc.dcc.repository.collab.CollabImporter;
+import org.icgc.dcc.repository.collabold.CollabOldImporter;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositorySourceFileImporter;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
@@ -38,7 +39,6 @@ import org.icgc.dcc.repository.gdc.GDCImporter;
 import org.icgc.dcc.repository.index.core.RepositoryFileIndexer;
 import org.icgc.dcc.repository.pcawg.PCAWGImporter;
 import org.icgc.dcc.repository.pdc.PDCImporter;
-import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.tcga.TCGAImporter;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -253,7 +253,7 @@ public class RepositoryImporter {
         new CollabImporter(context),
         new TCGAImporter(context),
         new CGHubImporter(context),
-        new SongImporter(context));
+        new CollabOldImporter(context));
   }
 
   private static void logStep(int stepNumber, int stepCount, String message) {
