@@ -17,54 +17,35 @@
  */
 package org.icgc.dcc.repository.collab;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.COLLAB_OLD;
-
-import java.io.File;
-
-import org.icgc.dcc.repository.cloud.CloudImporter;
-import org.icgc.dcc.repository.cloud.core.CloudFileProcessor;
-import org.icgc.dcc.repository.cloud.s3.CloudS3BucketReader;
-import org.icgc.dcc.repository.cloud.transfer.CloudTransferJobReader;
-import org.icgc.dcc.repository.collab.s3.AWSClientFactory;
+import org.icgc.dcc.repository.core.model.Repository;
+import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.Repositories;
 
 import lombok.NonNull;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.icgc.dcc.repository.song.reader.MockSongClient;
+import org.icgc.dcc.repository.song.reader.SongClient;
+
 
 @Slf4j
-public class CollabImporter extends CloudImporter {
-
-  /**
-   * Constants.
-   */
-  private static final String BUCKET_NAME = "oicr.icgc";
-  private static final String BUCKET_KEY_PREFIX = "data";
-
-  private static final String GIT_REPO_URL = "https://github.com/ICGC-TCGA-PanCancer/ceph_transfer_ops.git";
-  private static final String GIT_REPO_DIR_GLOB = "ceph-transfer-jobs*";
-  private static final File GIT_REPO_DIR = new File("/tmp/dcc-repository-collab");
+public class CollabImporter extends SongImporter {
 
   public CollabImporter(@NonNull RepositoryFileContext context) {
-    super(COLLAB_OLD, context, log);
+    super(
+      context,
+      Repositories.getCollabRepository(),
+      context.getCollabUrl(),
+      context.getCollabToken());
   }
 
-  @Override
-  protected CloudTransferJobReader createJobReader() {
-    return new CloudTransferJobReader(GIT_REPO_URL, GIT_REPO_DIR, GIT_REPO_DIR_GLOB);
-  }
-
-  @Override
-  protected CloudS3BucketReader createBucketReader() {
-    val s3 = AWSClientFactory.createS3Client();
-    return new CloudS3BucketReader(BUCKET_NAME, BUCKET_KEY_PREFIX, s3);
-  }
-
-  @Override
-  protected CloudFileProcessor createFileProcessor() {
-    val collabRepository = Repositories.getCollabRepository();
-    return new CloudFileProcessor(context, collabRepository);
+  public CollabImporter(@NonNull RepositoryFileContext context, @NonNull Repository repository, @NonNull MockSongClient client, @NonNull SongProcessor processor) {
+    super(
+      repository,
+      context,
+      client,
+      processor);
   }
 
 }

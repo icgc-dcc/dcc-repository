@@ -60,11 +60,12 @@ repository:
   esUri: es://localhost:9300
   archiveUri: file:///tmp/repository.tar.gz
   indexAlias: test-icgc-repository
+
 # Imports
 imports:
   mongoUri: mongodb://localhost/dcc-import
-  songUrl: http://localhost:8080
-  songToken: testing
+  collabUrl: http://localhost:8080
+  collabToken: testing
 
 # ID
 id:

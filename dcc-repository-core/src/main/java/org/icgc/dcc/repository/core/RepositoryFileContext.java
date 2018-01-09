@@ -52,10 +52,10 @@ public class RepositoryFileContext {
   private final URI esUri;
   @NonNull
   @Getter
-  private final URL songUrl;
+  private final URL collabUrl;
   @NonNull
   @Getter
-  private final String songToken;
+  private final String collabToken;
   @Getter
   @NonNull
   private final URI archiveUri;

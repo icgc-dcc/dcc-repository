@@ -76,8 +76,8 @@ public class ClientProperties {
 
     @MongoURI
     MongoClientURI mongoUri;
-    String songUrl;
-    String songToken;
+    String collabUrl;
+    String collabToken;
   }
 
   @Data

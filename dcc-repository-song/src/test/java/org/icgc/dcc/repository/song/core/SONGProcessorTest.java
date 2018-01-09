@@ -15,16 +15,13 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.song.core;
+package org.icgc.dcc.repository.collab.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
-import org.codehaus.jackson.node.ObjectNode;
 import org.icgc.dcc.repository.core.model.Repositories;
-import org.icgc.dcc.repository.song.model.SongAnalysis;
-import org.icgc.dcc.repository.song.model.SongFile;
-import org.icgc.dcc.repository.song.reader.MockSongClient;
+import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.icgc.dcc.repository.song.reader.SongClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -38,12 +35,11 @@ public class SONGProcessorTest {
   private static final ObjectMapper MAPPER = new ObjectMapper().
     configure(AUTO_CLOSE_SOURCE, false);
   SongProcessor songProcessor;
-  SongClient songClient;
 
   @Before
   public void testExecute() throws IOException {
     val context = newLocalRepositoryFileContext();
-    val repository = Repositories.getSongRepository();
+    val repository = Repositories.getCollabRepository();
 
     songProcessor = new SongProcessor(context, repository);
   }
