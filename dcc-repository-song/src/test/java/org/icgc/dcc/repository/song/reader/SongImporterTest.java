@@ -35,7 +35,7 @@ public class SongImporterTest {
   @Test
   public void testExecute() throws IOException {
     val context = newLocalRepositoryFileContext();
-    val repository = Repositories.getSongRepository();
+    val repository = Repositories.getCollabRepository();
 
     val reader = new MockSongClient("analyses.json", "study.json", "studies.json");
     val processor = new SongProcessor(context, repository);
