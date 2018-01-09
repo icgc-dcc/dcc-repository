@@ -15,10 +15,15 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.song.reader;
+package org.icgc.dcc.repository.song;
 
 import lombok.val;
+import lombok.NonNull;
+import org.icgc.dcc.repository.song.reader.MockSongClient;
+import org.icgc.dcc.repository.song.SongImporter;
+import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.junit.Ignore;
@@ -44,7 +49,10 @@ public class SongImporterTest {
   }
 
   private class TestImporter extends SongImporter {
-
+    public TestImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
+                        MockSongClient reader, SongProcessor processor) {
+      super(repository, context, reader, processor);
+    }
   }
 
 }
