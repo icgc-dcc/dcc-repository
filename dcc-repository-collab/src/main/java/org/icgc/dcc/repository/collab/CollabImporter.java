@@ -17,7 +17,7 @@
  */
 package org.icgc.dcc.repository.collab;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.COLLAB;
+import static org.icgc.dcc.repository.core.model.RepositorySource.COLLAB_OLD;
 
 import java.io.File;
 
@@ -47,7 +47,7 @@ public class CollabImporter extends CloudImporter {
   private static final File GIT_REPO_DIR = new File("/tmp/dcc-repository-collab");
 
   public CollabImporter(@NonNull RepositoryFileContext context) {
-    super(COLLAB, context, log);
+    super(COLLAB_OLD, context, log);
   }
 
   @Override

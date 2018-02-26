@@ -73,7 +73,7 @@ public class RepositoryFileFilter {
     val repositories = resolveRepositories(file);
 
     // PCAWG published
-    if (inPCAWG(repositories) || inEGA(repositories)) {
+    if (inPCAWG(repositories) || inEGA(repositories) || inSong(repositories)) {
       return true;
     }
 
@@ -84,6 +84,10 @@ public class RepositoryFileFilter {
 
     // All others are considered published
     return true;
+  }
+
+  private static boolean inSong(Set<Repository> repositories) {
+    return repositories.stream().anyMatch(r -> r.getSource() == RepositorySource.COLLAB);
   }
 
   private static boolean inPCAWG(Set<Repository> repositories) {

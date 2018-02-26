@@ -110,7 +110,7 @@ public class PCAWGFileInfoResolver {
     }
   }
 
-  private static String resolveVariantCallingDataType(String fileName) {
+  public static String resolveVariantCallingDataType(String fileName) {
     if (fileName.endsWith(".somatic.snv_mnv.vcf.gz")) {
       return DataType.SSM;
     } else if (fileName.endsWith(".somatic.cnv.vcf.gz")) {

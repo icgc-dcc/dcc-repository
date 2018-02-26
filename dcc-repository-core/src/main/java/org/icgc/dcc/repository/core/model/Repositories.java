@@ -20,14 +20,7 @@ package org.icgc.dcc.repository.core.model;
 import static com.google.common.collect.Iterables.tryFind;
 import static com.google.common.collect.Maps.uniqueIndex;
 import static lombok.AccessLevel.PRIVATE;
-import static org.icgc.dcc.repository.core.model.RepositorySource.AWS;
-import static org.icgc.dcc.repository.core.model.RepositorySource.CGHUB;
-import static org.icgc.dcc.repository.core.model.RepositorySource.COLLAB;
-import static org.icgc.dcc.repository.core.model.RepositorySource.EGA;
-import static org.icgc.dcc.repository.core.model.RepositorySource.GDC;
-import static org.icgc.dcc.repository.core.model.RepositorySource.PCAWG;
-import static org.icgc.dcc.repository.core.model.RepositorySource.PDC;
-import static org.icgc.dcc.repository.core.model.RepositorySource.TCGA;
+import static org.icgc.dcc.repository.core.model.RepositorySource.*;
 
 import java.util.List;
 import java.util.Map;
@@ -59,7 +52,7 @@ public final class Repositories {
       repository().source(PCAWG) .environment(RepositoryEnvironment.INTERNET)  .access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GNOS).type(RepositoryType.GNOS)       .name("PCAWG - Chicago (TCGA)") .code("pcawg-chicago-tcga").country("US").timezone("America/Chicago")    .baseUrl("https://gtrepo-osdc-tcga.annailabs.com/").build(),
       repository().source(AWS)   .environment(RepositoryEnvironment.AWS)       .access(RepositoryAccess.DACO)                                       .storage(RepositoryStorage.ICGC).type(RepositoryType.S3)         .name("AWS - Virginia")         .code("aws-virginia")      .country("US").timezone("America/New_York")   .baseUrl("https://s3-external-1.amazonaws.com/").build(),
       repository().source(COLLAB).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.DACO)                                       .storage(RepositoryStorage.ICGC).type(RepositoryType.S3)         .name("Collaboratory - Toronto").code("collaboratory")     .country("CA").timezone("America/Toronto")    .baseUrl("https://www.cancercollaboratory.org:9080/").build()
-      );
+  );
   // @formatter:on
 
   private static final Map<String, Repository> INDEX = uniqueIndex(REPOSITORIES, r -> r.getCode());
@@ -85,8 +78,9 @@ public final class Repositories {
   @Getter
   private static final Repository aWSRepository = findRepository(repository -> repository.getSource() == AWS);
   @Getter
-  private static final Repository collabRepository = findRepository(repository -> repository.getSource() == COLLAB);
-
+  private static final Repository collabRepository = findRepository(repository -> repository.getSource() == COLLAB_OLD);
+  @Getter
+  private static final Repository songRepository = findRepository(repository -> repository.getSource() == COLLAB);
   private static Repository findRepository(Predicate<Repository> predicate) {
     return tryFind(getRepositories(), predicate).orNull();
   }
