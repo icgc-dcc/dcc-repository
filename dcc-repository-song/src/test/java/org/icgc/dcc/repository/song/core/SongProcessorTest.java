@@ -15,36 +15,48 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.collab.s3;
+package org.icgc.dcc.repository.song.core;
 
-import com.amazonaws.ClientConfiguration;
-import com.amazonaws.auth.SignerFactory;
-import com.amazonaws.auth.profile.ProfileCredentialsProvider;
-import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.S3ClientOptions;
-import com.amazonaws.services.s3.internal.S3Signer;
-
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.val;
+import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.icgc.dcc.repository.song.reader.SongClient;
+import org.junit.Before;
+import org.junit.Test;
 
-public class AWSClientFactory {
+import java.io.IOException;
 
-  /**
-   * Constants.
-   */
-  private static final String COLLAB_S3_ENDPOINT = "https://object.cancercollaboratory.org:9080";
+import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
+import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
 
-  public static AmazonS3 createS3Client() {
-    // Required for current version of Rados Gateway
-    SignerFactory.registerSigner("S3Signer", S3Signer.class);
+public class SongProcessorTest {
+  private static final ObjectMapper MAPPER = new ObjectMapper().
+    configure(AUTO_CLOSE_SOURCE, false);
+  SongProcessor songProcessor;
 
-    val s3 = new AmazonS3Client(
-        new ProfileCredentialsProvider("collab"),
-        new ClientConfiguration().withSignerOverride("S3Signer"));
-    s3.setEndpoint(COLLAB_S3_ENDPOINT);
-    s3.setS3ClientOptions(new S3ClientOptions().withPathStyleAccess(true));
+  @Before
+  public void testExecute() throws IOException {
+    val context = newLocalRepositoryFileContext();
+    val repository = Repositories.getCollabRepository();
 
-    return s3;
+    songProcessor = new SongProcessor(context, repository);
+  }
+
+  @Test
+  public void testSequencingReadDataType() throws IOException {
+    assert "Aligned Reads".equals(songProcessor.sequencingReadDataType("BAM", true));
+    assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("BAM", false));
+    assert "Sequencing Reads".equals(songProcessor.sequencingReadDataType("BAM", null));
+
+    assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTA", true));
+    assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTQ", false));
+    assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTQ", null));
+  }
+
+  public JsonNode toJSON(String jsonString) throws IOException{
+    return MAPPER.readTree(jsonString.replace('\'','"'));
   }
 
 }

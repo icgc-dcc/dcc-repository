@@ -29,34 +29,26 @@ import org.icgc.dcc.repository.song.core.SongProcessor;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 import org.icgc.dcc.repository.song.reader.SongClient;
 
+import java.net.URL;
+
 @Slf4j
-public class SongImporter extends GenericRepositorySourceFileImporter {
+public abstract class SongImporter extends GenericRepositorySourceFileImporter {
   @NonNull
   private final SongClient reader;
   @NonNull
   private final SongProcessor processor;
+
+  public SongImporter(@NonNull RepositoryFileContext context, @NonNull Repository repository, @NonNull URL songUrl, @NonNull String songToken) {
+    super(repository.getSource(), context, log);
+    this.reader = new SongClient(songUrl, songToken);
+    this.processor = new SongProcessor(context, repository);
+  }
 
   public SongImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
     SongClient reader, SongProcessor processor) {
     super(repository.getSource(), context, log);
     this.reader = reader;
     this.processor = processor;
-  }
-
-  public SongImporter(@NonNull RepositoryFileContext context) {
-    super(Repositories.getSongRepository().getSource(), context, log);
-
-    this.reader = getDefaultSongClient();
-    this.processor = getDefaultSongProcessor();
-  }
-
-  SongClient getDefaultSongClient() {
-    log.info("Creating Song Client for URL" + context.getSongUrl().toString());
-    return new SongClient(context.getSongUrl(), context.getSongToken());
-  }
-
-  SongProcessor getDefaultSongProcessor() {
-    return new SongProcessor(context, Repositories.getSongRepository());
   }
 
   @Override

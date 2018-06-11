@@ -15,32 +15,36 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.song.reader;
+package org.icgc.dcc.repository.collabold.s3;
+
+import com.amazonaws.ClientConfiguration;
+import com.amazonaws.auth.SignerFactory;
+import com.amazonaws.auth.profile.ProfileCredentialsProvider;
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.AmazonS3Client;
+import com.amazonaws.services.s3.S3ClientOptions;
+import com.amazonaws.services.s3.internal.S3Signer;
 
 import lombok.val;
-import org.icgc.dcc.repository.core.model.Repositories;
-import org.icgc.dcc.repository.song.SongImporter;
-import org.icgc.dcc.repository.song.core.SongProcessor;
-import org.junit.Ignore;
-import org.junit.Test;
 
-import java.io.IOException;
+public class AWSClientFactory {
 
-import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+  /**
+   * Constants.
+   */
+  private static final String COLLAB_S3_ENDPOINT = "https://object.cancercollaboratory.org:9080";
 
-@Ignore("For development only -- requires mongod to be running on localhost")
+  public static AmazonS3 createS3Client() {
+    // Required for current version of Rados Gateway
+    SignerFactory.registerSigner("S3Signer", S3Signer.class);
 
-public class SONGImporterTest {
+    val s3 = new AmazonS3Client(
+        new ProfileCredentialsProvider("collab"),
+        new ClientConfiguration().withSignerOverride("S3Signer"));
+    s3.setEndpoint(COLLAB_S3_ENDPOINT);
+    s3.setS3ClientOptions(new S3ClientOptions().withPathStyleAccess(true));
 
-  @Test
-  public void testExecute() throws IOException {
-    val context = newLocalRepositoryFileContext();
-    val repository = Repositories.getSongRepository();
-
-    val reader = new MockSongClient("analyses.json", "study.json", "studies.json");
-    val processor = new SongProcessor(context, repository);
-    val importer = new SongImporter(repository, context, reader, processor);
-    importer.execute();
+    return s3;
   }
 
 }
