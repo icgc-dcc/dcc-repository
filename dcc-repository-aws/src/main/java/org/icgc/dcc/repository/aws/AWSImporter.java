@@ -17,54 +17,22 @@
  */
 package org.icgc.dcc.repository.aws;
 
-import static org.icgc.dcc.repository.core.model.RepositorySource.AWS;
-
-import java.io.File;
-
-import org.icgc.dcc.repository.aws.s3.AWSClientFactory;
-import org.icgc.dcc.repository.cloud.CloudImporter;
-import org.icgc.dcc.repository.cloud.core.CloudFileProcessor;
-import org.icgc.dcc.repository.cloud.s3.CloudS3BucketReader;
-import org.icgc.dcc.repository.cloud.transfer.CloudTransferJobReader;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.Repositories;
 
 import lombok.NonNull;
-import lombok.val;
 import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.repository.song.SongImporter;
 
 @Slf4j
-public class AWSImporter extends CloudImporter {
-
-  /**
-   * Constants.
-   */
-  private static final String BUCKET_NAME = "oicr.icgc";
-  private static final String BUCKET_KEY_PREFIX = "data";
-
-  private static final String GIT_REPO_URL = "https://github.com/ICGC-TCGA-PanCancer/s3-transfer-operations.git";
-  private static final String GIT_REPO_DIR_GLOB = "s3-transfer-jobs-*";
-  private static final File GIT_REPO_DIR = new File("/tmp/dcc-repository-aws");
+public class AWSImporter extends SongImporter {
 
   public AWSImporter(@NonNull RepositoryFileContext context) {
-    super(AWS, context, log);
-  }
-
-  @Override
-  protected CloudTransferJobReader createJobReader() {
-    return new CloudTransferJobReader(GIT_REPO_URL, GIT_REPO_DIR, GIT_REPO_DIR_GLOB);
-  }
-
-  @Override
-  protected CloudS3BucketReader createBucketReader() {
-    val s3 = AWSClientFactory.createS3Client();
-    return new CloudS3BucketReader(BUCKET_NAME, BUCKET_KEY_PREFIX, s3);
-  }
-
-  @Override
-  protected CloudFileProcessor createFileProcessor() {
-    val awsRepository = Repositories.getAWSRepository();
-    return new CloudFileProcessor(context, awsRepository);
+    super(
+      context,
+      Repositories.getAWSRepository(),
+      context.getAwsUrl(),
+      context.getAwsToken());
   }
 
 }
