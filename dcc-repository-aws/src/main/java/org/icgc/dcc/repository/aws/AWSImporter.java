@@ -30,7 +30,7 @@ public class AWSImporter extends SongImporter {
   public AWSImporter(@NonNull RepositoryFileContext context) {
     super(
       context,
-      Repositories.getCollabRepository(),
+      Repositories.getAWSRepository(),
       context.getAwsUrl(),
       context.getAwsToken());
   }
