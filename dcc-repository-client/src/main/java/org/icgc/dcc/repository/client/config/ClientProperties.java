@@ -78,6 +78,9 @@ public class ClientProperties {
     MongoClientURI mongoUri;
     String collabUrl;
     String collabToken;
+    String awsUrl;
+    String awsToken;
+
   }
 
   @Data

@@ -73,7 +73,9 @@ public class ClientConfig {
         .dccIdResolver(new DCCDonorIdResolver())
         .importMongoUri(properties.getImports().getMongoUri())
         .collabUrl(url(properties.getImports().getCollabUrl()))
-        .collabToken(properties.getImports().getCollabToken());
+        .collabToken(properties.getImports().getCollabToken())
+        .awsUrl(url(properties.getImports().getAwsUrl()))
+        .awsToken(properties.getImports().getAwsToken());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())

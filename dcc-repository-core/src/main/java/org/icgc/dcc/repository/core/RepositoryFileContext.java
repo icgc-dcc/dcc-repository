@@ -56,6 +56,12 @@ public class RepositoryFileContext {
   @NonNull
   @Getter
   private final String collabToken;
+  @NonNull
+  @Getter
+  private final URL awsUrl;
+  @NonNull
+  @Getter
+  private final String awsToken;
   @Getter
   @NonNull
   private final URI archiveUri;
