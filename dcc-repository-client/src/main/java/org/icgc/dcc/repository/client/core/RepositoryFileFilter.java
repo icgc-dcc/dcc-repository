@@ -60,7 +60,7 @@ public class RepositoryFileFilter {
 
   private boolean isIncluded(RepositoryFile file) {
     // Include all
-    return isPublished(file);
+    return isPublished(file) && hasFileCopies(file);
   }
 
   /**
@@ -84,6 +84,11 @@ public class RepositoryFileFilter {
 
     // All others are considered published
     return true;
+  }
+
+  private boolean hasFileCopies(RepositoryFile file) {
+    val repositories = resolveRepositories(file);
+    return file.getFileCopies().size() > 0;
   }
 
   private static boolean inSong(Set<Repository> repositories) {
