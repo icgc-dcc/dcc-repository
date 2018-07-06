@@ -22,21 +22,29 @@ import com.fasterxml.jackson.databind.JsonNode;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+
+import static java.util.Objects.isNull;
 
 public class SongAnalysis extends JsonContainer {
   private final static String SAMPLES = "sample";
   private final static String EXPERIMENT = "experiment";
   private final static String FILES = "file";
+  private final static String INFO = "info";
+  private static final String IS_PCAWG = "isPcawg";
+
   private List<SongFile> files;
   private List<SongSample> samples;
   private SongExperiment experiment;
   private SongStudy study;
+  private Boolean pcawg;
 
   public SongAnalysis(JsonNode json, JsonNode study) {
     super(json);
     setFiles(from(FILES));
     setSamples(from(SAMPLES));
     setExperiment(get(Field.analysisType), from(EXPERIMENT));
+    setPcawg(from(INFO));
     this.study = new SongStudy(study);
   }
 
@@ -58,6 +66,17 @@ public class SongAnalysis extends JsonContainer {
     return Collections.unmodifiableList(files);
   }
 
+  public Optional<Boolean> isPcawg(){
+    return Optional.ofNullable(this.pcawg);
+  }
+
+  private void setPcawg(JsonNode info){
+    if (isNull(info) || info.isNull() || !info.has(IS_PCAWG)) {
+      this.pcawg = null;
+    }else {
+      this.pcawg = info.path(IS_PCAWG).asBoolean();
+    }
+  }
   private void setFiles(JsonNode f) {
     assert f.isArray();
     files = new ArrayList<>();
