@@ -104,11 +104,15 @@ public class SongProcessor extends RepositoryFileProcessor {
 
   private RepositoryFile convert(SongFile f, SongAnalysis a) {
     val id = f.get(objectId);
+    val study = a.isPcawg()
+        .filter(x -> x)
+        .map(x -> ImmutableList.of(Study.PCAWG))
+        .orElse(null);
 
     val repoFile = new RepositoryFile()
       .setId(context.ensureFileId(id))
       .setObjectId(id)
-      .setStudy(null)
+      .setStudy(study)
       .setAccess(f.get(fileAccess))
       .setDataBundle(getDataBundle(a))
       .setAnalysisMethod(getAnalysisMethod(a))
