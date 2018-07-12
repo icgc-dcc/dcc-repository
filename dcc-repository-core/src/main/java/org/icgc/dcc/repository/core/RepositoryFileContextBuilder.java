@@ -69,17 +69,20 @@ public final class RepositoryFileContextBuilder {
   @Accessors(chain = true, fluent = true)
   private URL collabUrl = url("http://localhost:8080");
   @Setter
-  @Accessors(chain = true, fluent=true)
+  @Accessors(chain = true, fluent = true)
   private String collabToken = "";
   @Setter
   @Accessors(chain = true, fluent = true)
   private URL awsUrl = url("http://localhost:8080");
   @Setter
-  @Accessors(chain = true, fluent=true)
+  @Accessors(chain = true, fluent = true)
   private String awsToken = "";
   @Setter
   @Accessors(chain = true, fluent = true)
   private URI esUri = URIs.getUri("es://localhost:9300");
+  @Setter
+  @Accessors(chain = true, fluent = true)
+  private String esSearchUrl = "http://elasticsearch1.res.oicr.on.ca:9200/icgc-release";
   @Setter
   @Accessors(chain = true, fluent = true)
   private URI archiveUri = URIs.getUri("file:///");
@@ -124,7 +127,8 @@ public final class RepositoryFileContextBuilder {
     val idClient = createIdClient();
     val tcgaMappings = new TCGAMappingsReader().readMappings();
 
-    return new RepositoryFileContext(repoMongoUri, esUri, collabUrl, collabToken, awsUrl, awsToken, archiveUri, indexAlias, skipImport, sources, readOnly,
+    return new RepositoryFileContext(repoMongoUri, esUri, esSearchUrl, collabUrl, collabToken, awsUrl, awsToken,
+        archiveUri, indexAlias, skipImport, sources, readOnly,
         primarySites, idClient, tcgaMappings, pcawgIdResolver, dccIdResolver, report);
   }
 

@@ -23,4 +23,6 @@ public interface RepositoryIdResolver {
 
   Set<String> resolveIds();
 
+  Set<String> resolveIds(String esSearchUrl);
+
 }

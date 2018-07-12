@@ -17,14 +17,13 @@
  */
 package org.icgc.dcc.repository.core;
 
-import static lombok.AccessLevel.PACKAGE;
-import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.repository.core.util.RepositoryFiles.qualifyDonorId;
 
 import java.net.URI;
 import java.net.URL;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.common.tcga.core.TCGAMappings;
@@ -35,10 +34,10 @@ import com.mongodb.MongoClientURI;
 
 import lombok.Getter;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
 import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor(access = PACKAGE)
+@Slf4j
 public class RepositoryFileContext {
 
   /**
@@ -50,6 +49,9 @@ public class RepositoryFileContext {
   @Getter
   @NonNull
   private final URI esUri;
+  @Getter
+  @NonNull
+  private final String esSearchUrl;
   @NonNull
   @Getter
   private final URL collabUrl;
@@ -96,13 +98,44 @@ public class RepositoryFileContext {
   @NonNull
   private final BufferedReport report;
 
-  /**
-   * Data.
-   */
-  @Getter(lazy = true, value = PRIVATE)
-  private final Set<String> pcawgSubmittedDonorIds = pcawgIdResolver.resolveIds();
-  @Getter(lazy = true, value = PRIVATE)
-  private final Set<String> dccSubmittedDonorIds = dccIdResolver.resolveIds();
+  private final AtomicReference<Object> cachedPcawgIds = new AtomicReference<>();
+  private final AtomicReference<Object> cachedDccSubmittedDonorIds = new AtomicReference<>();
+
+  public Set<String> getPcawgSubmittedDonorIds() {
+    Object ids = this.cachedPcawgIds.get();
+    if (ids == null) {
+      synchronized (this.cachedPcawgIds) {
+        ids = this.cachedPcawgIds.get();
+        final Set<String> resolvedIds = getPcawgIds();
+        ids = resolvedIds == null ? this.cachedPcawgIds : resolvedIds;
+        this.cachedPcawgIds.set(resolvedIds);
+      }
+    }
+
+    return (Set<String>) (ids == this.cachedPcawgIds ? null : ids);
+  }
+
+  public Set<String> getDccSubmittedDonorIds() {
+    Object ids = this.cachedDccSubmittedDonorIds.get();
+    if (ids == null) {
+      synchronized (this.cachedDccSubmittedDonorIds) {
+        ids = this.cachedDccSubmittedDonorIds.get();
+        final Set<String> resolvedIds = getDccIds();
+        ids = resolvedIds == null ? this.cachedDccSubmittedDonorIds : resolvedIds;
+        this.cachedDccSubmittedDonorIds.set(resolvedIds);
+      }
+    }
+
+    return (Set<String>) (ids == this.cachedDccSubmittedDonorIds ? null : ids);
+  }
+
+  private Set<String> getPcawgIds() {
+    return pcawgIdResolver.resolveIds(esSearchUrl);
+  }
+
+  private Set<String> getDccIds() {
+    return dccIdResolver.resolveIds(esSearchUrl);
+  }
 
   public boolean isSourceActive(@NonNull RepositorySource source) {
     return sources.contains(source);
@@ -212,6 +245,54 @@ public class RepositoryFileContext {
 
   public String getFileId(@NonNull String submittedFileId) {
     return idClient.getFileId(submittedFileId).orElse(null);
+  }
+
+  /**
+   * @param mongoUri
+   * @param esUri
+   * @param esSearchUrl
+   * @param collabUrl
+   * @param collabToken
+   * @param awsUrl
+   * @param awsToken
+   * @param archiveUri
+   * @param indexAlias
+   * @param skipImport
+   * @param sources
+   * @param readOnly
+   * @param primarySites
+   * @param idClient
+   * @param tcgaMappings
+   * @param pcawgIdResolver
+   * @param dccIdResolver
+   * @param report
+   */
+  public RepositoryFileContext(MongoClientURI mongoUri, URI esUri, String esSearchUrl, URL collabUrl,
+      String collabToken, URL awsUrl, String awsToken, URI archiveUri, String indexAlias, boolean skipImport,
+      Set<RepositorySource> sources, boolean readOnly, Map<String, String> primarySites, IdClient idClient,
+      TCGAMappings tcgaMappings, RepositoryIdResolver pcawgIdResolver, RepositoryIdResolver dccIdResolver,
+      BufferedReport report) {
+    super();
+    this.mongoUri = mongoUri;
+    this.esUri = esUri;
+    this.esSearchUrl = esSearchUrl;
+    this.collabUrl = collabUrl;
+    this.collabToken = collabToken;
+    this.awsUrl = awsUrl;
+    this.awsToken = awsToken;
+    this.archiveUri = archiveUri;
+    this.indexAlias = indexAlias;
+    this.skipImport = skipImport;
+    this.sources = sources;
+    this.readOnly = readOnly;
+    this.primarySites = primarySites;
+    this.idClient = idClient;
+    this.tcgaMappings = tcgaMappings;
+    this.pcawgIdResolver = pcawgIdResolver;
+    this.dccIdResolver = dccIdResolver;
+    this.report = report;
+
+    log.info("CONSTRUCTOR" + esSearchUrl);
   }
 
 }

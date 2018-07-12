@@ -22,9 +22,11 @@ import static lombok.AccessLevel.PRIVATE;
 import static org.icgc.dcc.repository.core.model.RepositorySource.PCAWG;
 
 import java.io.IOException;
+import java.util.Set;
 
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositoryFileContextBuilder;
+import org.icgc.dcc.repository.core.RepositoryIdResolver;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.pcawg.core.PCAWGFileProcessor;
 import org.icgc.dcc.repository.pcawg.reader.PCAWGDonorArchiveReader;
@@ -94,9 +96,24 @@ public class PCAWGFileResolver {
         .realIds(false)
         .sources(ImmutableSet.of(PCAWG))
         .indexAlias("")
-        .pcawgIdResolver(() -> ImmutableSet.of())
-        .dccIdResolver(() -> ImmutableSet.of())
+        .pcawgIdResolver(newEmptyIdResovler())
+        .dccIdResolver(newEmptyIdResovler())
         .build();
+  }
+
+  private static RepositoryIdResolver newEmptyIdResovler() {
+    return new RepositoryIdResolver() {
+
+      @Override
+      public Set<String> resolveIds(String esSearchUrl) {
+        return ImmutableSet.of();
+      }
+
+      @Override
+      public Set<String> resolveIds() {
+        return ImmutableSet.of();
+      }
+    };
   }
 
 }
