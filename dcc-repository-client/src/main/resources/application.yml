@@ -58,6 +58,7 @@ spring:
 repository:
   mongoUri: mongodb://localhost/dcc-repository
   esUri: es://localhost:9300
+  esSearchUrl: https://foobar:9200/icgc-release
   archiveUri: file:///tmp/repository.tar.gz
   indexAlias: test-icgc-repository
 

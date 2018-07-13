@@ -26,6 +26,7 @@ import java.net.URL;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.*;
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.common.tcga.core.TCGAMappings;
 import org.icgc.dcc.id.client.core.IdClient;
@@ -33,11 +34,9 @@ import org.icgc.dcc.repository.core.model.RepositorySource;
 
 import com.mongodb.MongoClientURI;
 
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor(access = PACKAGE)
 public class RepositoryFileContext {
 
@@ -50,6 +49,9 @@ public class RepositoryFileContext {
   @Getter
   @NonNull
   private final URI esUri;
+  @Getter
+  @NonNull
+  private final String esSearchUrl;
   @NonNull
   @Getter
   private final URL collabUrl;
@@ -96,13 +98,10 @@ public class RepositoryFileContext {
   @NonNull
   private final BufferedReport report;
 
-  /**
-   * Data.
-   */
   @Getter(lazy = true, value = PRIVATE)
-  private final Set<String> pcawgSubmittedDonorIds = pcawgIdResolver.resolveIds();
+  private final Set<String> pcawgSubmittedDonorIds = pcawgIdResolver.resolveIds(esSearchUrl);
   @Getter(lazy = true, value = PRIVATE)
-  private final Set<String> dccSubmittedDonorIds = dccIdResolver.resolveIds();
+  private final Set<String> dccSubmittedDonorIds = dccIdResolver.resolveIds(esSearchUrl);
 
   public boolean isSourceActive(@NonNull RepositorySource source) {
     return sources.contains(source);

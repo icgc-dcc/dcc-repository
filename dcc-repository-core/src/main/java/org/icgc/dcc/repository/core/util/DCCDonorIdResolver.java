@@ -26,11 +26,20 @@ import org.icgc.dcc.repository.core.RepositoryIdResolver;
 import org.icgc.dcc.repository.core.release.ReleaseClient;
 import org.icgc.dcc.repository.core.release.ReleaseClient.Donor;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class DCCDonorIdResolver implements RepositoryIdResolver {
 
   @Override
   public Set<String> resolveIds() {
     return resolveDonors().map(this::formatId).collect(toImmutableSet());
+  }
+
+  @Override
+  public Set<String> resolveIds(String esSearchUrl) {
+    log.info("THIS IS MY ELASTICSEARCH URL " + esSearchUrl);
+    return new ReleaseClient(esSearchUrl).getDonors().stream().map(this::formatId).collect(toImmutableSet());
   }
 
   private String formatId(Donor donor) {

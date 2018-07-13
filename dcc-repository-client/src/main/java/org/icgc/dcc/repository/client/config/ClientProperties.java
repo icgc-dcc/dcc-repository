@@ -58,6 +58,7 @@ public class ClientProperties {
     MongoClientURI mongoUri;
 
     URI esUri;
+    String esSearchUrl;
     URI archiveUri;
     String indexAlias;
 

@@ -51,7 +51,18 @@ public final class RepositoryFileContexts {
   }
 
   private static RepositoryIdResolver newEmptyIdResovler() {
-    return () -> ImmutableSet.of();
+    return new RepositoryIdResolver() {
+
+      @Override
+      public Set<String> resolveIds(String esSearchUrl) {
+        return ImmutableSet.of();
+      }
+
+      @Override
+      public Set<String> resolveIds() {
+        return ImmutableSet.of();
+      }
+    };
   }
 
 }

@@ -17,7 +17,8 @@
  */
 package org.icgc.dcc.repository.client.config;
 
-import lombok.SneakyThrows;
+import java.net.URL;
+
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.core.report.BufferedReport;
 import org.icgc.dcc.repository.client.core.RepositoryImporter;
@@ -29,9 +30,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 
+import lombok.SneakyThrows;
 import lombok.val;
-
-import java.net.URL;
 
 @Configuration
 public class ClientConfig {
@@ -81,6 +81,7 @@ public class ClientConfig {
         .repoMongoUri(properties.getRepository().getMongoUri())
 
         .esUri(properties.getRepository().getEsUri())
+        .esSearchUrl(properties.getRepository().getEsSearchUrl())
         .archiveUri(properties.getRepository().getArchiveUri())
         .indexAlias(properties.getRepository().getIndexAlias());
 
