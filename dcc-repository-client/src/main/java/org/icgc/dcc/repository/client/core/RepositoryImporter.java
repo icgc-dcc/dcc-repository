@@ -29,7 +29,6 @@ import org.icgc.dcc.common.core.report.ReportEmail;
 import org.icgc.dcc.repository.aws.AWSImporter;
 import org.icgc.dcc.repository.cghub.CGHubImporter;
 import org.icgc.dcc.repository.collab.CollabImporter;
-import org.icgc.dcc.repository.collabold.CollabOldImporter;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositorySourceFileImporter;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
@@ -58,9 +57,9 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Importer for the ICGC "Data Repository" feature which imports file metadata from various external data sources.
  * 
- * @see https://wiki.oicr.on.ca/display/DCCSOFT/Uniform+metadata+JSON+document+for+ICGC+Data+Repositories
- * @see https://wiki.oicr.on.ca/display/DCCSOFT/JSON+structure+for+ICGC+data+repository
- * @see https://wiki.oicr.on.ca/display/DCCSOFT/UI+-+The+new+ICGC+DCC+data+repository+-+Simplified+version+Phase+1
+ * @see "https://wiki.oicr.on.ca/display/DCCSOFT/Uniform+metadata+JSON+document+for+ICGC+Data+Repositories"
+ * @see "https://wiki.oicr.on.ca/display/DCCSOFT/JSON+structure+for+ICGC+data+repository"
+ * @see "https://wiki.oicr.on.ca/display/DCCSOFT/UI+-+The+new+ICGC+DCC+data+repository+-+Simplified+version+Phase+1"
  */
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -252,8 +251,7 @@ public class RepositoryImporter {
         new AWSImporter(context),
         new CollabImporter(context),
         new TCGAImporter(context),
-        new CGHubImporter(context),
-        new CollabOldImporter(context));
+        new CGHubImporter(context));
   }
 
   private static void logStep(int stepNumber, int stepCount, String message) {
