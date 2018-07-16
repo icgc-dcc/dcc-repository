@@ -74,8 +74,6 @@ public final class Repositories {
   @Getter
   private static final Repository aWSRepository = findRepository(repository -> repository.getSource() == AWS);
   @Getter
-  private static final Repository collabOldRepository = findRepository(repository -> repository.getSource() == COLLAB_OLD);
-  @Getter
   private static final Repository collabRepository = findRepository(repository -> repository.getSource() == COLLAB);
   private static Repository findRepository(Predicate<Repository> predicate) {
     return tryFind(getRepositories(), predicate).orNull();
