@@ -17,22 +17,25 @@
  */
 package org.icgc.dcc.repository.collab;
 
-import org.icgc.dcc.repository.song.SongImporter;
-import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.Repositories;
-
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.repository.core.RepositoryFileContext;
+import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.song.SongImporter;
+
+import static org.icgc.dcc.repository.song.model.AnalysisStates.PUBLISHED;
 
 @Slf4j
 public class CollabImporter extends SongImporter {
 
   public CollabImporter(@NonNull RepositoryFileContext context) {
     super(
-      context,
-      Repositories.getCollabRepository(),
-      context.getCollabUrl(),
-      context.getCollabToken());
+        context,
+        Repositories.getCollabRepository(),
+        context.getCollabUrl(),
+        context.getCollabToken(),
+        ImmutableSet.of(PUBLISHED));
   }
 
 }

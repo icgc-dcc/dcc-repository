@@ -21,34 +21,41 @@ import lombok.NonNull;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
 import org.icgc.dcc.repository.core.util.GenericRepositorySourceFileImporter;
 import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.icgc.dcc.repository.song.model.AnalysisStates;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 import org.icgc.dcc.repository.song.reader.SongClient;
 
 import java.net.URL;
+import java.util.Set;
 
 @Slf4j
 public abstract class SongImporter extends GenericRepositorySourceFileImporter {
+
   @NonNull
   private final SongClient reader;
   @NonNull
   private final SongProcessor processor;
+  @NonNull
+  private final Set<AnalysisStates> analysisStates;
 
-  public SongImporter(@NonNull RepositoryFileContext context, @NonNull Repository repository, @NonNull URL songUrl, @NonNull String songToken) {
+  public SongImporter(@NonNull RepositoryFileContext context, @NonNull Repository repository,
+      @NonNull URL songUrl, @NonNull String songToken, @NonNull Set<AnalysisStates> analysisStates) {
     super(repository.getSource(), context, log);
     this.reader = new SongClient(songUrl, songToken);
     this.processor = new SongProcessor(context, repository);
+    this.analysisStates = analysisStates;
   }
 
   public SongImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
-    SongClient reader, SongProcessor processor) {
+    SongClient reader, SongProcessor processor, @NonNull Set<AnalysisStates> analysisStates) {
     super(repository.getSource(), context, log);
     this.reader = reader;
     this.processor = processor;
+    this.analysisStates = analysisStates;
   }
 
   @Override
@@ -62,7 +69,7 @@ public abstract class SongImporter extends GenericRepositorySourceFileImporter {
 
   @SneakyThrows
   private Iterable<SongAnalysis> readAnalysis() {
-    return reader.readAnalyses();
+    return reader.readAnalyses(analysisStates);
   }
 
 }

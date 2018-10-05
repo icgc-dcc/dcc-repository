@@ -22,15 +22,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.icgc.dcc.repository.song.model.AnalysisStates;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
+import static org.icgc.dcc.common.core.util.Joiners.COMMA;
+import static org.icgc.dcc.repository.song.model.AnalysisStates.PUBLISHED;
 
 @Slf4j
 public class SongClient {
@@ -49,39 +53,40 @@ public class SongClient {
     songToken = null;
   }
 
-  public Iterable<SongAnalysis> readAnalyses() {
+  public Iterable<SongAnalysis> readAnalyses(Set<AnalysisStates> analysisStates) {
     val studies = getStudies();
     return stream(studies).
       map(JsonNode::asText).
-      flatMap(this::readStudy).
+      flatMap(s -> readStudy(s, analysisStates)).
       collect(Collectors.toList());
   }
 
-  private Stream<SongAnalysis> readStudy(String id) {
-    val study = getStudy(id);
-    val analyses = getAnalyses(id);
-    return createAnalyses(analyses, study);
+  private Stream<SongAnalysis> readStudy(String studyId, Set<AnalysisStates> analysisStates) {
+    val analyses = getAnalyses(studyId, analysisStates);
+    return createAnalyses(analyses);
   }
 
-  private Stream<SongAnalysis> createAnalyses(JsonNode analyses, JsonNode study) {
+  private Stream<SongAnalysis> createAnalyses(JsonNode analyses) {
     assert (analyses.isArray());
-    return stream(analyses).map(a -> createSongAnalysis(a, study));
+    return stream(analyses).map(this::createSongAnalysis);
   }
 
-  private SongAnalysis createSongAnalysis(JsonNode analysis, JsonNode study) {
-    return new SongAnalysis(analysis, study);
+  private SongAnalysis createSongAnalysis(JsonNode analysis) {
+    return new SongAnalysis(analysis);
   }
 
   JsonNode getStudies() {
     return readJson(songPath + "/studies/all");
   }
 
-  JsonNode getStudy(String study) {
-    return readJson(songPath + "/studies/" + study + "/all");
-  }
-
-  JsonNode getAnalyses(String study) {
-    return readJson(songPath + "/studies/" + study + "/analysis");
+  JsonNode getAnalyses(String study, Set<AnalysisStates> analysisStates) {
+    String analysisStateParamValue;
+    if (analysisStates.isEmpty()){
+      analysisStateParamValue = PUBLISHED.name();
+    } else {
+      analysisStateParamValue = COMMA.join(analysisStates);
+    }
+    return readJson(songPath + "/studies/" + study + "/analysis?analysisStates="+analysisStateParamValue);
   }
 
   JsonNode readJson(String path) {

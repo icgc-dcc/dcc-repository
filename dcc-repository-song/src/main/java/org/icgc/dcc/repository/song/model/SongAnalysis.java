@@ -32,20 +32,19 @@ public class SongAnalysis extends JsonContainer {
   private final static String FILES = "file";
   private final static String INFO = "info";
   private static final String IS_PCAWG = "isPcawg";
+  private static final String STUDY = "study";
 
   private List<SongFile> files;
   private List<SongSample> samples;
   private SongExperiment experiment;
-  private SongStudy study;
   private Boolean pcawg;
 
-  public SongAnalysis(JsonNode json, JsonNode study) {
+  public SongAnalysis(JsonNode json) {
     super(json);
     setFiles(from(FILES));
     setSamples(from(SAMPLES));
     setExperiment(get(Field.analysisType), from(EXPERIMENT));
     setPcawg(from(INFO));
-    this.study = new SongStudy(study);
   }
 
   public List<SongSample> getSamples() {
@@ -83,8 +82,8 @@ public class SongAnalysis extends JsonContainer {
     f.elements().forEachRemaining(node -> files.add(new SongFile(node)));
   }
 
-  public SongStudy getStudy() {
-    return study;
+  public String getStudyId() {
+    return get(STUDY);
   }
 
   public SongExperiment getExperiment() {
