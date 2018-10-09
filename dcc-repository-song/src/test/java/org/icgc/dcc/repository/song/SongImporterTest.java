@@ -17,24 +17,25 @@
  */
 package org.icgc.dcc.repository.song;
 
-import lombok.val;
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
-import org.icgc.dcc.repository.song.reader.MockSongClient;
-import org.icgc.dcc.repository.song.SongImporter;
+import lombok.val;
 import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.core.model.Repository;
-import org.icgc.dcc.repository.song.SongImporter;
 import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.icgc.dcc.repository.song.model.AnalysisStates;
+import org.icgc.dcc.repository.song.reader.MockSongClient;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+import static org.icgc.dcc.repository.song.model.AnalysisStates.PUBLISHED;
 
 @Ignore("For development only -- requires mongod to be running on localhost")
-
 public class SongImporterTest {
 
   @Test
@@ -42,16 +43,17 @@ public class SongImporterTest {
     val context = newLocalRepositoryFileContext();
     val repository = Repositories.getCollabRepository();
 
-    val reader = new MockSongClient("analyses.json", "study.json", "studies.json");
+    val reader = new MockSongClient("analyses.json", "studies.json");
     val processor = new SongProcessor(context, repository);
-    val importer = new TestImporter(repository, context, reader, processor);
+    val analysisStates = ImmutableSet.of(PUBLISHED);
+    val importer = new TestImporter(repository, context, reader, processor, analysisStates);
     importer.execute();
   }
 
   private class TestImporter extends SongImporter {
     public TestImporter(@NonNull Repository repository, @NonNull RepositoryFileContext context,
-                        MockSongClient reader, SongProcessor processor) {
-      super(repository, context, reader, processor);
+                        MockSongClient reader, SongProcessor processor, @NonNull Set<AnalysisStates> analysisStates) {
+      super(repository, context, reader, processor, analysisStates);
     }
   }
 

@@ -3,13 +3,7 @@
     "analysisType": "variantCall",
     "info": "{}",
     "analysisId": "AN1",
-    "study": {
-      "info": "{}",
-      "studyId": "ABC123",
-      "name": "X1-CA",
-      "organization": "Sample Data Research Institute",
-      "description": "A fictional study"
-    },
+    "study": "ABC123",
     "analysisState": "UNPUBLISHED",
     "sample": [
       {
@@ -92,13 +86,7 @@
     "analysisType": "sequencingRead",
     "info": "{}",
     "analysisId": "AN2",
-    "study": {
-      "info": "{}",
-      "studyId": "ABC123",
-      "name": "X1-CA",
-      "organization": "Sample Data Research Institute",
-      "description": "A fictional study"
-    },
+    "study": "ABC123",
     "analysisState": "UNPUBLISHED",
     "sample": [
       {

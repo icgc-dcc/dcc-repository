@@ -19,18 +19,18 @@ package org.icgc.dcc.repository.song.reader;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.io.Resources;
+import org.icgc.dcc.repository.song.model.AnalysisStates;
 
 import java.net.URL;
+import java.util.Set;
 
 public class MockSongClient extends SongClient {
 
   private String analysesURL;
-  private String studyURL;
   private URL studiesURL;
 
-  public MockSongClient(String analysesFile, String studyFile, String studiesFile) {
+  public MockSongClient(String analysesFile, String studiesFile) {
     analysesURL = analysesFile;
-    studyURL = studyFile;
     studiesURL = resourceFile(studiesFile);
   }
 
@@ -39,17 +39,12 @@ public class MockSongClient extends SongClient {
   }
 
   @Override
-  JsonNode getStudy(String study) {
-    return readJson(resourceFile(study + "/" + studyURL));
-  }
-
-  @Override
   JsonNode getStudies() {
     return readJson(studiesURL);
   }
 
   @Override
-  JsonNode getAnalyses(String study) {
+  JsonNode getAnalyses(String study, Set<AnalysisStates> analysisStates) {
     return readJson(resourceFile(study + "/" + analysesURL));
   }
 

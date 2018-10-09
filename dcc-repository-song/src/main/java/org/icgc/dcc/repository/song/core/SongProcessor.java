@@ -25,7 +25,15 @@ import org.icgc.dcc.repository.core.RepositoryFileContext;
 import org.icgc.dcc.repository.core.RepositoryFileProcessor;
 import org.icgc.dcc.repository.core.model.Repository;
 import org.icgc.dcc.repository.core.model.RepositoryFile;
-import org.icgc.dcc.repository.core.model.RepositoryFile.*;
+import org.icgc.dcc.repository.core.model.RepositoryFile.AnalysisMethod;
+import org.icgc.dcc.repository.core.model.RepositoryFile.DataBundle;
+import org.icgc.dcc.repository.core.model.RepositoryFile.DataCategorization;
+import org.icgc.dcc.repository.core.model.RepositoryFile.DataType;
+import org.icgc.dcc.repository.core.model.RepositoryFile.Donor;
+import org.icgc.dcc.repository.core.model.RepositoryFile.FileCopy;
+import org.icgc.dcc.repository.core.model.RepositoryFile.IndexFile;
+import org.icgc.dcc.repository.core.model.RepositoryFile.ReferenceGenome;
+import org.icgc.dcc.repository.core.model.RepositoryFile.Study;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 import org.icgc.dcc.repository.song.model.SongFile;
 import org.icgc.dcc.repository.song.model.SongSequencingRead;
@@ -41,14 +49,17 @@ import static java.util.stream.StreamSupport.stream;
 import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisId;
 import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisType;
 import static org.icgc.dcc.repository.song.model.SongDonor.Field.donorSubmitterId;
-import static org.icgc.dcc.repository.song.model.SongFile.Field.*;
+import static org.icgc.dcc.repository.song.model.SongFile.Field.fileAccess;
+import static org.icgc.dcc.repository.song.model.SongFile.Field.fileMd5sum;
+import static org.icgc.dcc.repository.song.model.SongFile.Field.fileName;
+import static org.icgc.dcc.repository.song.model.SongFile.Field.fileType;
+import static org.icgc.dcc.repository.song.model.SongFile.Field.objectId;
 import static org.icgc.dcc.repository.song.model.SongSample.Field.sampleSubmitterId;
 import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.alignmentTool;
 import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.libraryStrategy;
 import static org.icgc.dcc.repository.song.model.SongSequencingRead.Field.referenceGenome;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.specimenSubmitterId;
 import static org.icgc.dcc.repository.song.model.SongSpecimen.Field.specimenType;
-import static org.icgc.dcc.repository.song.model.SongStudy.Field.studyId;
 import static org.icgc.dcc.repository.song.model.SongVariantCall.Field.variantCallingTool;
 
 @Slf4j
@@ -309,14 +320,14 @@ public class SongProcessor extends RepositoryFileProcessor {
   }
 
   Donor getDonor(SongAnalysis a) {
-    val study = a.getStudy();
+    val studyId = a.getStudyId();
     val sample = a.getFirstSample();
     val donor = sample.getDonor();
     val specimen = sample.getSpecimen();
     return new Donor()
       .setStudy(null)
-      .setProjectCode(study.get(studyId))
-      .setPrimarySite(context.getPrimarySite(study.get(studyId)))
+      .setProjectCode(studyId)
+      .setPrimarySite(context.getPrimarySite(studyId))
       .setDonorId(null)
       .setSpecimenId(null)
       .setSpecimenType(singletonList(specimen.get(specimenType)))
