@@ -33,7 +33,7 @@ public class CombinerConfig {
   }
 
   @Bean
-  public MultiFieldCombiner<ReferenceGenome> referenceGenomeAccumulator(){
+  public MultiFieldCombiner<ReferenceGenome> referenceGenomeCombiner(){
     return MultiFieldCombiner.<ReferenceGenome>builder()
         .fieldCombiner(
             FieldCombiner.<ReferenceGenome, String>builder()
@@ -62,7 +62,7 @@ public class CombinerConfig {
   }
 
   @Bean
-  public MultiFieldCombiner<AnalysisMethod> analysisMethodAccumulator(){
+  public MultiFieldCombiner<AnalysisMethod> analysisMethodCombiner(){
     return MultiFieldCombiner.<AnalysisMethod>builder()
         .fieldCombiner(
             FieldCombiner.<AnalysisMethod, String>builder()
@@ -85,7 +85,7 @@ public class CombinerConfig {
   }
 
   @Bean
-  public MultiFieldCombiner<DataBundle> dataBundleAccumulator(){
+  public MultiFieldCombiner<DataBundle> dataBundleCombiner(){
     return MultiFieldCombiner.<DataBundle>builder()
         .fieldCombiner(
             FieldCombiner.<DataBundle, String>builder()
@@ -102,7 +102,7 @@ public class CombinerConfig {
   }
 
   @Bean
-  public MultiFieldCombiner<DataCategorization> dataCategorizationAccumulator(){
+  public MultiFieldCombiner<DataCategorization> dataCategorizationCombiner(){
     return MultiFieldCombiner.<DataCategorization>builder()
         .fieldCombiner(
             FieldCombiner.<DataCategorization, String>builder()
@@ -127,12 +127,18 @@ public class CombinerConfig {
 
 
   @Bean
-  public MultiFieldCombiner<RepositoryFile> repositoryFileAccumulator(){
+  public MultiFieldCombiner<RepositoryFile> repositoryFileCombiner(){
     return MultiFieldCombiner.<RepositoryFile>builder()
         .fieldCombiner(
             FieldCombiner.<RepositoryFile, AnalysisMethod>builder()
                 .context(context)
                 .filterCriteria(buildNotNullFilterCriteria())
+                .fieldDef(
+                    FieldDef.<RepositoryFile, AnalysisMethod>builder()
+                        .fieldName("analysisMethod")
+                        .getter(RepositoryFile::getAnalysisMethod)
+                        .setter(RepositoryFile::setAnalysisMethod)
+                        .build())
                 .fieldDef(
                     FieldDef.<RepositoryFile, AnalysisMethod>builder()
                         .fieldName("analysisMethod")
