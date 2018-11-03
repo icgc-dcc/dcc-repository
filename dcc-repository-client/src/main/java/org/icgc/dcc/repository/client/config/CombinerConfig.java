@@ -209,6 +209,7 @@ public class CombinerConfig {
                 .build())
         .fieldCombiner(
             ListFieldCombiner.<RepositoryFile, Donor>builder()
+                .filterCriteria(buildNotNullFilterCriteria())
                 .fieldDef(
                     FieldDef.<RepositoryFile, List<Donor>>builder()
                         .fieldName("donors")
@@ -218,6 +219,7 @@ public class CombinerConfig {
                 .build())
         .fieldCombiner(
             ListFieldCombiner.<RepositoryFile, FileCopy>builder()
+                .filterCriteria(buildNotNullFilterCriteria())
                 .fieldDef(
                     FieldDef.<RepositoryFile, List<FileCopy>>builder()
                         .fieldName("fileCopies")

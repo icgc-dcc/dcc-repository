@@ -41,6 +41,7 @@ public class FieldCombiner<F, T> implements Combiner<F> {
     }
   }
 
+  // TODO: add distinct-by option. for example, distinct by donor id
   private List<T> filterDistinct(Iterable<T> items){
     val orderedSet = Sets.<T>newLinkedHashSet();
     stream(items)
