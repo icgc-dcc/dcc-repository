@@ -105,7 +105,7 @@ public class FirstNonNullCombinerTest {
         .map(function)
         .collect(toList());
     for (val r : results){
-      val out = combiner.merge(r.getInputs());
+      val out = combiner.combine(r.getInputs());
       assertThat(out).isEqualTo(r.getExpected());
     }
   }

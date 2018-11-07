@@ -1,16 +1,16 @@
 package org.icgc.dcc.repository.client.combiner;
 
 import lombok.val;
-import org.icgc.dcc.repository.core.model.RepositoryFile;
+import org.icgc.dcc.repository.core.model.RepositoryFile.AnalysisMethod;
 
-import static org.icgc.dcc.repository.client.combiner.Combineable.accumulateFirstNonNull;
+import static org.icgc.dcc.repository.client.combiner.Combineable.combineFirstNonNull;
 
-public class AnalysisMethodCombiner implements Combineable<RepositoryFile.AnalysisMethod> {
+public class AnalysisMethodCombiner implements Combineable<AnalysisMethod> {
   @Override
-  public RepositoryFile.AnalysisMethod merge(Iterable<RepositoryFile.AnalysisMethod> items) {
-    val a = new RepositoryFile.AnalysisMethod();
-    accumulateFirstNonNull(items, RepositoryFile.AnalysisMethod::getAnalysisType, RepositoryFile.AnalysisMethod::setAnalysisType, a);
-    accumulateFirstNonNull(items, RepositoryFile.AnalysisMethod::getSoftware, RepositoryFile.AnalysisMethod::setSoftware, a);
-    return a;
+  public AnalysisMethod combine(Iterable<AnalysisMethod> items) {
+    val combinedValue = new AnalysisMethod();
+    combineFirstNonNull(items, AnalysisMethod::getAnalysisType, AnalysisMethod::setAnalysisType, combinedValue);
+    combineFirstNonNull(items, AnalysisMethod::getSoftware, AnalysisMethod::setSoftware, combinedValue);
+    return combinedValue;
   }
 }

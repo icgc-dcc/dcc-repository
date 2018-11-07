@@ -3,13 +3,13 @@ package org.icgc.dcc.repository.client.combiner;
 import lombok.val;
 import org.icgc.dcc.repository.core.model.RepositoryFile.DataCategorization;
 
-import static org.icgc.dcc.repository.client.combiner.Combineable.accumulateFirstNonNull;
+import static org.icgc.dcc.repository.client.combiner.Combineable.combineFirstNonNull;
 
 public class DataCategorizationCombiner implements Combineable<DataCategorization> {
-  @Override public DataCategorization merge(Iterable<DataCategorization> items) {
-    val d = new DataCategorization();
-    accumulateFirstNonNull(items, DataCategorization::getDataType, DataCategorization::setDataType, d);
-    accumulateFirstNonNull(items, DataCategorization::getExperimentalStrategy, DataCategorization::setExperimentalStrategy, d);
-    return d;
+  @Override public DataCategorization combine(Iterable<DataCategorization> items) {
+    val combinedValue = new DataCategorization();
+    combineFirstNonNull(items, DataCategorization::getDataType, DataCategorization::setDataType, combinedValue);
+    combineFirstNonNull(items, DataCategorization::getExperimentalStrategy, DataCategorization::setExperimentalStrategy, combinedValue);
+    return combinedValue;
   }
 }

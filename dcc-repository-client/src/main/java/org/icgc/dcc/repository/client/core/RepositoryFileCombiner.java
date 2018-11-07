@@ -111,16 +111,16 @@ public class RepositoryFileCombiner {
     combinedFile.setAccess(combineField(accesses));
 
     val dataBundles = get(prioritizedFiles, RepositoryFile::getDataBundle);
-    combinedFile.setDataBundle(DATA_BUNDLE_COMBINER.merge(dataBundles));
+    combinedFile.setDataBundle(DATA_BUNDLE_COMBINER.combine(dataBundles));
 
     val analysisMethods = get(prioritizedFiles, RepositoryFile::getAnalysisMethod);
-    combinedFile.setAnalysisMethod(ANALYSIS_METHOD_COMBINER.merge(analysisMethods));
+    combinedFile.setAnalysisMethod(ANALYSIS_METHOD_COMBINER.combine(analysisMethods));
 
     val dataCategorizations = get(prioritizedFiles, RepositoryFile::getDataCategorization);
-    combinedFile.setDataCategorization(DATA_CATEGORIZATION_COMBINER.merge(dataCategorizations));
+    combinedFile.setDataCategorization(DATA_CATEGORIZATION_COMBINER.combine(dataCategorizations));
 
     val referenceGenomes = get(prioritizedFiles, RepositoryFile::getReferenceGenome);
-    combinedFile.setReferenceGenome(REFERENCE_GENOME_COMBINER.merge(referenceGenomes));
+    combinedFile.setReferenceGenome(REFERENCE_GENOME_COMBINER.combine(referenceGenomes));
 
     //
     // Combine All
