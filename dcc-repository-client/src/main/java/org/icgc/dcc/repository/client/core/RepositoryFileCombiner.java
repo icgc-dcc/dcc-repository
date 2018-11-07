@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.toList;
 import static org.icgc.dcc.common.core.util.function.Predicates.distinctByKey;
+import static org.icgc.dcc.common.core.util.function.Predicates.isNotNull;
 import static org.icgc.dcc.repository.core.util.RepositoryFiles.inPCAWGOrder;
 
 @Slf4j
@@ -147,7 +148,10 @@ public class RepositoryFileCombiner {
 
   private static <T> T combineField(Collection<T> values) {
     // Try to find first non-null
-    return values.stream().filter(value -> value != null).findFirst().orElse(null);
+    return values.stream()
+        .filter(isNotNull())
+        .findFirst()
+        .orElse(null);
   }
 
   private static Set<RepositoryFile> prioritize(Set<RepositoryFile> files) {
@@ -157,11 +161,19 @@ public class RepositoryFileCombiner {
   }
 
   private static <T> List<T> get(Collection<RepositoryFile> files, Function<RepositoryFile, T> getter) {
-    return files.stream().map(getter).collect(toList());
+    return files.stream()
+        .filter(isNotNull())
+        .map(getter)
+        .collect(toList());
   }
 
   private static <T> List<T> getAll(Collection<RepositoryFile> files, Function<RepositoryFile, List<T>> getter) {
-    return files.stream().flatMap(file -> getter.apply(file).stream()).collect(toList());
+    return files.stream()
+        .filter(isNotNull())
+        .map(getter)
+        .filter(isNotNull())
+        .flatMap(Collection::stream)
+        .collect(toList());
   }
 
 }
