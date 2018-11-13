@@ -17,9 +17,18 @@
  */
 package org.icgc.dcc.repository.client.core;
 
-import static java.util.stream.Collectors.toList;
-import static org.icgc.dcc.common.core.util.function.Predicates.distinctByKey;
-import static org.icgc.dcc.repository.core.util.RepositoryFiles.inPCAWGOrder;
+import com.google.common.collect.Sets;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import lombok.val;
+import org.icgc.dcc.repository.client.combiner.AnalysisMethodCombiner;
+import org.icgc.dcc.repository.client.combiner.DataBundleCombiner;
+import org.icgc.dcc.repository.client.combiner.DataCategorizationCombiner;
+import org.icgc.dcc.repository.client.combiner.ReferenceGenomeCombiner;
+import org.icgc.dcc.repository.core.RepositoryFileContext;
+import org.icgc.dcc.repository.core.model.RepositoryFile;
+import org.icgc.dcc.repository.core.model.RepositoryFile.Donor;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -28,19 +37,20 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import org.icgc.dcc.repository.core.RepositoryFileContext;
-import org.icgc.dcc.repository.core.model.RepositoryFile;
-
-import com.google.common.collect.Sets;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
-import lombok.extern.slf4j.Slf4j;
+import static java.util.stream.Collectors.toList;
+import static org.icgc.dcc.common.core.util.function.Predicates.distinctByKey;
+import static org.icgc.dcc.common.core.util.function.Predicates.isNotNull;
+import static org.icgc.dcc.repository.core.util.RepositoryFiles.inPCAWGOrder;
 
 @Slf4j
 @RequiredArgsConstructor
 public class RepositoryFileCombiner {
+
+  private static final AnalysisMethodCombiner ANALYSIS_METHOD_COMBINER = new AnalysisMethodCombiner();
+  private static final DataBundleCombiner DATA_BUNDLE_COMBINER = new DataBundleCombiner();
+  private static final DataCategorizationCombiner DATA_CATEGORIZATION_COMBINER = new DataCategorizationCombiner();
+  private static final ReferenceGenomeCombiner REFERENCE_GENOME_COMBINER = new ReferenceGenomeCombiner();
+
 
   /**
    * Dependencies.
@@ -76,7 +86,7 @@ public class RepositoryFileCombiner {
     };
   }
 
-  private RepositoryFile combineFiles(Set<RepositoryFile> files) {
+  RepositoryFile combineFiles(Set<RepositoryFile> files) {
     // TODO: Add checks for all root fields and very least add reporting for inconsistent fields, if not fail processing
     val prioritizedFiles = prioritize(files);
 
@@ -94,24 +104,24 @@ public class RepositoryFileCombiner {
     analyzeField(files, "objectId", objectIds);
     combinedFile.setObjectId(combineField(objectIds));
 
-    val studies = get(prioritizedFiles, RepositoryFile::getStudy);
-    combinedFile.setStudy(combineField(studies));
+    val studies = getAll(prioritizedFiles, RepositoryFile::getStudy);
+    combinedFile.setStudy(studies);
 
     val accesses = get(prioritizedFiles, RepositoryFile::getAccess);
     analyzeField(files, "access", accesses);
     combinedFile.setAccess(combineField(accesses));
 
     val dataBundles = get(prioritizedFiles, RepositoryFile::getDataBundle);
-    combinedFile.setDataBundle(combineField(dataBundles));
+    combinedFile.setDataBundle(DATA_BUNDLE_COMBINER.combine(dataBundles));
 
     val analysisMethods = get(prioritizedFiles, RepositoryFile::getAnalysisMethod);
-    combinedFile.setAnalysisMethod(combineField(analysisMethods));
+    combinedFile.setAnalysisMethod(ANALYSIS_METHOD_COMBINER.combine(analysisMethods));
 
     val dataCategorizations = get(prioritizedFiles, RepositoryFile::getDataCategorization);
-    combinedFile.setDataCategorization(combineField(dataCategorizations));
+    combinedFile.setDataCategorization(DATA_CATEGORIZATION_COMBINER.combine(dataCategorizations));
 
     val referenceGenomes = get(prioritizedFiles, RepositoryFile::getReferenceGenome);
-    combinedFile.setReferenceGenome(combineField(referenceGenomes));
+    combinedFile.setReferenceGenome(REFERENCE_GENOME_COMBINER.combine(referenceGenomes));
 
     //
     // Combine All
@@ -121,7 +131,7 @@ public class RepositoryFileCombiner {
     combinedFile.setFileCopies(fileCopies);
 
     val uniqueDonors = getAll(prioritizedFiles, RepositoryFile::getDonors).stream()
-        .filter(distinctByKey(d -> d.getDonorId()))
+        .filter(distinctByKey(Donor::getDonorId))
         .collect(toList());
     combinedFile.setDonors(uniqueDonors);
 
@@ -138,7 +148,10 @@ public class RepositoryFileCombiner {
 
   private static <T> T combineField(Collection<T> values) {
     // Try to find first non-null
-    return values.stream().filter(value -> value != null).findFirst().orElse(null);
+    return values.stream()
+        .filter(isNotNull())
+        .findFirst()
+        .orElse(null);
   }
 
   private static Set<RepositoryFile> prioritize(Set<RepositoryFile> files) {
@@ -148,11 +161,19 @@ public class RepositoryFileCombiner {
   }
 
   private static <T> List<T> get(Collection<RepositoryFile> files, Function<RepositoryFile, T> getter) {
-    return files.stream().map(getter).collect(toList());
+    return files.stream()
+        .filter(isNotNull())
+        .map(getter)
+        .collect(toList());
   }
 
   private static <T> List<T> getAll(Collection<RepositoryFile> files, Function<RepositoryFile, List<T>> getter) {
-    return files.stream().flatMap(file -> getter.apply(file).stream()).collect(toList());
+    return files.stream()
+        .filter(isNotNull())
+        .map(getter)
+        .filter(isNotNull())
+        .flatMap(Collection::stream)
+        .collect(toList());
   }
 
 }
