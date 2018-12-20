@@ -40,6 +40,7 @@ import org.icgc.dcc.repository.song.model.SongSequencingRead;
 import org.icgc.dcc.repository.song.model.SongVariantCall;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -299,23 +300,23 @@ public class SongProcessor extends RepositoryFileProcessor {
   }
 
   IndexFile getIndexFile(List<SongFile> files, String name) {
-    SongFile i = null;
+    Optional<SongFile> i = null;
     if (hasExtension(name, "BAM")) {
       i = getSongIndexFile(files, name + ".BAI");
     }
     if (hasExtension(name, "VCF")) {
       i = getSongIndexFile(files, name + ".TBI");
-      if(i == null){
-        i = getSongIndexFile(files, name + "IDX");
+      if(i.isPresent() == false) {
+        i = getSongIndexFile(files, name + "IDX'");
       }
-      if (i == null) {
+      if (i.isPresent() == false) {
         i = getSongIndexFile(files, name + ".TCG");
       }
     }
     if (i == null) {
       return new IndexFile();
     }
-    return createIndexFile(i);
+    return createIndexFile(i.get());
   }
 
   List<Donor> getDonors(SongAnalysis a) {
@@ -340,17 +341,12 @@ public class SongProcessor extends RepositoryFileProcessor {
       .setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
   }
 
-  SongFile getSongIndexFile(List<SongFile> files, String name) {
+  Optional<SongFile> getSongIndexFile(List<SongFile> files, String name) {
     val songIndex = files.stream().
       filter(f -> f.get(fileName).equalsIgnoreCase(name))
       .findFirst().orElse(null);
 
-    if (songIndex == null) {
-      return null;
-    }
-
-    return songIndex;
-
+    return Optional.ofNullable(songIndex);
   }
 
   IndexFile createIndexFile(SongFile file) {
