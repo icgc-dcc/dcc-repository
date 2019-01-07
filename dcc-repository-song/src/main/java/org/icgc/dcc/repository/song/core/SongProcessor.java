@@ -307,7 +307,7 @@ public class SongProcessor extends RepositoryFileProcessor {
     if (hasExtension(name, "VCF")) {
       i = getSongIndexFile(files, name + ".TBI");
       if(i.isPresent() == false) {
-        i = getSongIndexFile(files, name + "IDX'");
+        i = getSongIndexFile(files, name + ".IDX");
       }
       if (i.isPresent() == false) {
         i = getSongIndexFile(files, name + ".TCG");
