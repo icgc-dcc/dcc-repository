@@ -300,23 +300,20 @@ public class SongProcessor extends RepositoryFileProcessor {
   }
 
   IndexFile getIndexFile(List<SongFile> files, String name) {
-    Optional<SongFile> i = null;
+    Optional<SongFile> sf = Optional.empty();
     if (hasExtension(name, "BAM")) {
-      i = getSongIndexFile(files, name + ".BAI");
+      sf = getSongIndexFile(files, name + ".BAI");
     }
     if (hasExtension(name, "VCF")) {
-      i = getSongIndexFile(files, name + ".TBI");
-      if(i.isPresent() == false) {
-        i = getSongIndexFile(files, name + ".IDX");
-      }
-      if (i.isPresent() == false) {
-        i = getSongIndexFile(files, name + ".TCG");
-      }
+      sf = Stream.of(".TBI", ".IDX", ".TCG")
+              .map(suffix -> getSongIndexFile(files, name + suffix))
+              .filter(Optional::isPresent).findFirst().orElse(Optional.empty());
     }
-    if (i == null) {
+    if (sf.isPresent()){
+      return createIndexFile(sf.get());
+    } else {
       return new IndexFile();
     }
-    return createIndexFile(i.get());
   }
 
   List<Donor> getDonors(SongAnalysis a) {
