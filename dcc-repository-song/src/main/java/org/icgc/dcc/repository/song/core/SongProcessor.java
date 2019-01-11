@@ -303,17 +303,16 @@ public class SongProcessor extends RepositoryFileProcessor {
     Optional<SongFile> sf = Optional.empty();
     if (hasExtension(name, "BAM")) {
       sf = getSongIndexFile(files, name + ".BAI");
-    }
-    if (hasExtension(name, "VCF")) {
+    } else if (hasExtension(name, "VCF")) {
       sf = Stream.of(".TBI", ".IDX", ".TCG")
               .map(suffix -> getSongIndexFile(files, name + suffix))
-              .filter(Optional::isPresent).findFirst().orElse(Optional.empty());
+              .filter(Optional::isPresent)
+              .map(Optional::get)
+              .findFirst();
     }
-    if (sf.isPresent()){
-      return createIndexFile(sf.get());
-    } else {
-      return new IndexFile();
-    }
+    return sf
+            .map(this::createIndexFile)
+            .orElse(new IndexFile());
   }
 
   List<Donor> getDonors(SongAnalysis a) {
@@ -338,12 +337,10 @@ public class SongProcessor extends RepositoryFileProcessor {
       .setSubmittedSampleId(singletonList(sample.get(sampleSubmitterId)));
   }
 
-  Optional<SongFile> getSongIndexFile(List<SongFile> files, String name) {
-    val songIndex = files.stream().
-      filter(f -> f.get(fileName).equalsIgnoreCase(name))
-      .findFirst().orElse(null);
-
-    return Optional.ofNullable(songIndex);
+  private static Optional<SongFile> getSongIndexFile(List<SongFile> files, String name) {
+    return files.stream()
+            .filter(f -> f.get(fileName).equalsIgnoreCase(name))
+            .findFirst();
   }
 
   IndexFile createIndexFile(SongFile file) {
