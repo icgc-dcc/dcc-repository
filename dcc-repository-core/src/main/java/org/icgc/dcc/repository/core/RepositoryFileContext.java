@@ -60,6 +60,12 @@ public class RepositoryFileContext {
   private final String collabToken;
   @NonNull
   @Getter
+  private final URL songPDCUrl;
+  @NonNull
+  @Getter
+  private final String songPDCToken;
+  @NonNull
+  @Getter
   private final URL awsUrl;
   @NonNull
   @Getter

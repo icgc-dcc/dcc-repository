@@ -45,7 +45,8 @@ public final class Repositories {
     repository().source(PCAWG).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GNOS).type(RepositoryType.GNOS).name("PCAWG - Santa Cruz").code("pcawg-cghub").country("US").timezone("America/Los_Angeles").baseUrl("https://cghub.ucsc.edu/").build(),
     repository().source(PCAWG).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GNOS).type(RepositoryType.GNOS).name("PCAWG - Seoul").code("pcawg-seoul").country("KR").timezone("Asia/Seoul").baseUrl("https://gtrepo-etri.annailabs.com/").build(),
     repository().source(AWS).environment(RepositoryEnvironment.AWS).access(RepositoryAccess.DACO).storage(RepositoryStorage.ICGC).type(RepositoryType.S3).name("AWS - Virginia").code("aws-virginia").country("US").timezone("America/New_York").baseUrl("https://s3-external-1.amazonaws.com/").build(),
-    repository().source(COLLAB).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.DACO).storage(RepositoryStorage.ICGC).type(RepositoryType.S3).name("Collaboratory - Toronto").code("collaboratory").country("CA").timezone("America/Toronto").baseUrl("https://www.cancercollaboratory.org:9080/").build()
+    repository().source(COLLAB).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.DACO).storage(RepositoryStorage.ICGC).type(RepositoryType.S3).name("Collaboratory - Toronto").code("collaboratory").country("CA").timezone("America/Toronto").baseUrl("https://www.cancercollaboratory.org:9080/").build(),
+    repository().source(SONGPDC).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.DACO).storage(RepositoryStorage.ICGC).type(RepositoryType.S3).name("PDC SONG Collaboratory - Toronto").code("song-pdc").country("CA").timezone("America/Toronto").baseUrl("https://www.cancercollaboratory.org:9080/").build()
   );
   // @formatter:on
 
@@ -73,6 +74,9 @@ public final class Repositories {
   private static final Repository aWSRepository = findRepository(repository -> repository.getSource() == AWS);
   @Getter
   private static final Repository collabRepository = findRepository(repository -> repository.getSource() == COLLAB);
+  @Getter
+  private static final Repository pdcSongRepository = findRepository(repository -> repository.getSource() == SONGPDC);
+
   private static Repository findRepository(Predicate<Repository> predicate) {
     return tryFind(getRepositories(), predicate).orNull();
   }

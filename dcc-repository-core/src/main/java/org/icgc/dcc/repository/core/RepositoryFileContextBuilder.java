@@ -70,7 +70,13 @@ public final class RepositoryFileContextBuilder {
   private URL collabUrl = url("http://localhost:8080");
   @Setter
   @Accessors(chain = true, fluent = true)
+  private URL songPDCUrl = url("http://localhost:8080");
+  @Setter
+  @Accessors(chain = true, fluent = true)
   private String collabToken = "";
+  @Setter
+  @Accessors(chain = true, fluent = true)
+  private String songPDCToken = "";
   @Setter
   @Accessors(chain = true, fluent = true)
   private URL awsUrl = url("http://localhost:8080");
@@ -127,7 +133,7 @@ public final class RepositoryFileContextBuilder {
     val idClient = createIdClient();
     val tcgaMappings = new TCGAMappingsReader().readMappings();
 
-    return new RepositoryFileContext(repoMongoUri, esUri, esSearchUrl, collabUrl, collabToken, awsUrl, awsToken,
+    return new RepositoryFileContext(repoMongoUri, esUri, esSearchUrl, collabUrl, collabToken, songPDCUrl, songPDCToken, awsUrl, awsToken,
         archiveUri, indexAlias, skipImport, sources, readOnly,
         primarySites, idClient, tcgaMappings, pcawgIdResolver, dccIdResolver, report);
   }
