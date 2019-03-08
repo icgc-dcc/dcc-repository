@@ -40,7 +40,9 @@ public enum RepositoryCollection implements Identifiable {
   TCGA_FILE("TCGAFile", RepositorySource.TCGA),
   PCAWG_FILE("PCAWGFile", RepositorySource.PCAWG),
   AWS_FILE("AWSFile", RepositorySource.AWS),
-  COLLAB_FILE("CollabFile", RepositorySource.COLLAB);
+  COLLAB_FILE("CollabFile", RepositorySource.COLLAB),
+  SONGPDC_FILE("SONGPDCFile", RepositorySource.SONGPDC),
+  ;
 
   @Getter
   @NonNull

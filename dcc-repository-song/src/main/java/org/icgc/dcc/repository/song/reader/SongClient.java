@@ -22,6 +22,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import lombok.val;
+import org.apache.commons.lang3.StringUtils;
 import org.icgc.dcc.repository.song.model.AnalysisStates;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 
@@ -55,10 +56,10 @@ public class SongClient {
 
   public Iterable<SongAnalysis> readAnalyses(Set<AnalysisStates> analysisStates) {
     val studies = getStudies();
-    return stream(studies).
-      map(JsonNode::asText).
-      flatMap(s -> readStudy(s, analysisStates)).
-      collect(Collectors.toList());
+    return stream(studies)
+        .map(JsonNode::asText)
+        .flatMap(s -> readStudy(s, analysisStates))
+        .collect(Collectors.toList());
   }
 
   private Stream<SongAnalysis> readStudy(String studyId, Set<AnalysisStates> analysisStates) {
@@ -96,7 +97,7 @@ public class SongClient {
   @SneakyThrows
   JsonNode readJson(URL url) {
     val connection = url.openConnection();
-    if (songToken != null) {
+    if (StringUtils.isNotEmpty(songToken)) {
       connection.setRequestProperty("Authorization", "Bearer " + songToken);
     }
     log.info("Reading from " + url.toExternalForm());

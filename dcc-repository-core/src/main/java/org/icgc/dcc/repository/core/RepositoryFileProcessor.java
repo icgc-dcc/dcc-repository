@@ -80,13 +80,29 @@ public abstract class RepositoryFileProcessor {
     });
   }
 
+
   protected void assignIds(Iterable<RepositoryFile> donorFiles) {
+    this.assignIds(donorFiles, true);
+  }
+
+  /**
+   * This method depends on the caller to tell it whether it should read TCGA fields, that is needed because in this issue
+   * https://github.com/icgc-dcc/dcc-portal/issues/553 we are indexing studies that are considered TCGA but they have
+   * no uuids to be translated between PCAWG and TCGA barcodes, so no need to translate.
+   *
+   * @param donorFiles donor files list
+   * @param readTCGAOtherIdentifiers a flag indicating that the TCGA barcodes should be populated from other identifiers
+   *                                 field in the donor object, this is needed in case the donerId passed is already a
+   *                                 TCGA barcode so no need to try and read from  the translated uuids to barcodes.
+   *                                 https://github.com/icgc-dcc/dcc-portal/issues/553
+   */
+  protected void assignIds(Iterable<RepositoryFile> donorFiles, boolean readTCGAOtherIdentifiers) {
     for (val donorFile : donorFiles) {
       for (val donor : donorFile.getDonors()) {
         val projectCode = donor.getProjectCode();
 
         // Special case for TCGA who submits barcodes to DCC but UUIDs to PCAWG
-        val translate = TRANSLATABLE_PROJECT_CODES.contains(donor.getProjectCode());
+        val translate = readTCGAOtherIdentifiers && TRANSLATABLE_PROJECT_CODES.contains(donor.getProjectCode());
         val submittedDonorId =
             translate ? donor.getOtherIdentifiers().getTcgaParticipantBarcode() : donor.getSubmittedDonorId();
         val submittedSpecimenId =

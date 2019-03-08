@@ -34,6 +34,7 @@ import org.icgc.dcc.repository.core.model.RepositoryFile.FileCopy;
 import org.icgc.dcc.repository.core.model.RepositoryFile.IndexFile;
 import org.icgc.dcc.repository.core.model.RepositoryFile.ReferenceGenome;
 import org.icgc.dcc.repository.core.model.RepositoryFile.Study;
+import org.icgc.dcc.repository.core.model.RepositorySource;
 import org.icgc.dcc.repository.song.model.SongAnalysis;
 import org.icgc.dcc.repository.song.model.SongFile;
 import org.icgc.dcc.repository.song.model.SongSequencingRead;
@@ -103,7 +104,7 @@ public class SongProcessor extends RepositoryFileProcessor {
     translateUUIDs(files);
 
     log.info("Assigning ICGC IDs...");
-    assignIds(files);
+    assignIds(files, !repository.getSource().equals(RepositorySource.SONGPDC));
 
     return files;
   }
@@ -134,7 +135,7 @@ public class SongProcessor extends RepositoryFileProcessor {
       .setDonors(getDonors(a));
 
     assignStudy(singleton(repoFile));
-    assignIds(singleton(repoFile));
+    assignIds(singleton(repoFile), !repository.getSource().equals(RepositorySource.SONGPDC));
 
     return repoFile;
   }

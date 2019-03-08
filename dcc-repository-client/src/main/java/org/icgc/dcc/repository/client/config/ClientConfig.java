@@ -74,12 +74,13 @@ public class ClientConfig {
         .importMongoUri(properties.getImports().getMongoUri())
         .collabUrl(url(properties.getImports().getCollabUrl()))
         .collabToken(properties.getImports().getCollabToken())
+        .songPDCUrl(url(properties.getImports().getSongPDCUrl()))
+        .songPDCToken(properties.getImports().getSongPDCToken())
         .awsUrl(url(properties.getImports().getAwsUrl()))
         .awsToken(properties.getImports().getAwsToken());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())
-
         .esUri(properties.getRepository().getEsUri())
         .esSearchUrl(properties.getRepository().getEsSearchUrl())
         .archiveUri(properties.getRepository().getArchiveUri())

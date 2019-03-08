@@ -35,7 +35,7 @@ spring:
 
 # Repository
 repository:
-  sources: COLLAB,PCAWG,AWS,COLLAB,TCGA,CGHUB
+  sources: COLLAB,PCAWG,AWS,COLLAB,TCGA,CGHUB,SONGPDC
   steps: IMPORT,MERGE,INDEX
   indexAlias: icgc-repository
 
@@ -58,15 +58,20 @@ spring:
 repository:
   mongoUri: mongodb://localhost/dcc-repository
   esUri: es://localhost:9300
-  esSearchUrl: https://foobar:9200/icgc-release
+  esSearchUrl: http://localhost:9200/icgc-release
   archiveUri: file:///tmp/repository.tar.gz
   indexAlias: test-icgc-repository
+
 
 # Imports
 imports:
   mongoUri: mongodb://localhost/dcc-import
-  collabUrl: http://localhost:8080
-  collabToken: testing
+  collabUrl: https://song.cancercollaboratory.org
+  collabToken:
+  songPDCUrl: https://song-pdc.cancercollaboratory.org
+  songPDCToken:
+  awsUrl: https://virginia.song.icgc.org
+  awsToken: test
 
 # ID
 id:

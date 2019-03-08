@@ -40,6 +40,8 @@ public final class Repositories {
     repository().source(EGA).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.DACO).storage(RepositoryStorage.EGA).type(RepositoryType.EGA_ARCHIVE).name("EGA - Hinxton").code("ega").country("UK").timezone("Europe/London").baseUrl("http://ega.ebi.ac.uk/ega/").build(),
     repository().source(GDC).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GDC).type(RepositoryType.GDC_ARCHIVE).name("GDC - Chicago").code("gdc").country("US").timezone("America/Chicago").baseUrl("https://api.gdc.cancer.gov/").build(),
     repository().source(PDC).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.S3).type(RepositoryType.PDC_S3).name("PDC - Chicago").code("pdc").country("US").timezone("America/Chicago").baseUrl("https://bionimbus-objstore-cs.opensciencedatacloud.org/").build(),
+    // next repo added for: https://github.com/icgc-dcc/dcc-portal/issues/553
+    repository().source(SONGPDC).environment(RepositoryEnvironment.OPEN_STACK).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.S3).type(RepositoryType.PDC_S3).name("PDC - Chicago").code("song-pdc").country("US").timezone("America/Chicago").baseUrl("https://bionimbus-objstore-cs.opensciencedatacloud.org/").build(),
     repository().source(TCGA).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.OPEN).storage(RepositoryStorage.WEB).type(RepositoryType.WEB_ARCHIVE).name("TCGA DCC - Bethesda").code("tcga").country("US").timezone("America/New_York").baseUrl("https://tcga-data.nci.nih.gov/").build(),
     repository().source(CGHUB).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GNOS).type(RepositoryType.GNOS).name("CGHub - Santa Cruz").code("cghub").country("US").timezone("America/Los_Angeles").baseUrl("https://cghub.ucsc.edu/").build(),
     repository().source(PCAWG).environment(RepositoryEnvironment.INTERNET).access(RepositoryAccess.ERA_COMMONS).access(RepositoryAccess.DB_GAP).storage(RepositoryStorage.GNOS).type(RepositoryType.GNOS).name("PCAWG - Santa Cruz").code("pcawg-cghub").country("US").timezone("America/Los_Angeles").baseUrl("https://cghub.ucsc.edu/").build(),
@@ -73,6 +75,9 @@ public final class Repositories {
   private static final Repository aWSRepository = findRepository(repository -> repository.getSource() == AWS);
   @Getter
   private static final Repository collabRepository = findRepository(repository -> repository.getSource() == COLLAB);
+  @Getter
+  private static final Repository pdcSongRepository = findRepository(repository -> repository.getSource() == SONGPDC);
+
   private static Repository findRepository(Predicate<Repository> predicate) {
     return tryFind(getRepositories(), predicate).orNull();
   }
