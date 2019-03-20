@@ -17,6 +17,9 @@
  */
 package org.icgc.dcc.repository.song.core;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
@@ -40,16 +43,17 @@ import org.icgc.dcc.repository.song.model.SongFile;
 import org.icgc.dcc.repository.song.model.SongSequencingRead;
 import org.icgc.dcc.repository.song.model.SongVariantCall;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonList;
 import static java.util.stream.StreamSupport.stream;
-import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisId;
-import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.analysisType;
+import static org.icgc.dcc.repository.song.model.SongAnalysis.Field.*;
 import static org.icgc.dcc.repository.song.model.SongDonor.Field.donorSubmitterId;
 import static org.icgc.dcc.repository.song.model.SongFile.Field.fileAccess;
 import static org.icgc.dcc.repository.song.model.SongFile.Field.fileMd5sum;
@@ -97,7 +101,7 @@ public class SongProcessor extends RepositoryFileProcessor {
   }
 
   public Iterable<RepositoryFile> getRepositoryFiles(Iterable<SongAnalysis> analyses) {
-    val files = stream(analyses.spliterator(), false).
+    val files = stream(analyses.spliterator(), false).filter(this::isIndexable).
       flatMap(this::convertFiles).collect(Collectors.toList());
 
     log.info("Translating TCGC UUIDs...");
@@ -107,6 +111,44 @@ public class SongProcessor extends RepositoryFileProcessor {
     assignIds(files, !repository.getSource().equals(RepositorySource.SONGPDC));
 
     return files;
+  }
+
+  public boolean isIndexable(SongAnalysis analysis) {
+    val mapper = new ObjectMapper().
+      configure(AUTO_CLOSE_SOURCE, false);
+
+    val info = analysis.getInfo().asText();
+
+    // if we don't have proper JSON in the info
+    // field, we don't have a dataset field that
+    // says PCAWG2, so we're indexable.
+    JsonNode jsonNode;
+
+    try {
+      jsonNode = mapper.readTree(info);
+    } catch (JsonProcessingException e) {
+      return true;
+    } catch (IOException e) {
+      return true;
+    }
+
+    if (!jsonNode.has("dataset")) {
+      return true;
+    }
+
+    val dataset = jsonNode.get("dataset");
+    if (! dataset.isArray() ) {
+      return true;
+    }
+
+    return stream(dataset.spliterator(), false).noneMatch(this::isPCAWG2Node);
+  }
+
+  public boolean isPCAWG2Node(JsonNode node) {
+    if (!node.isTextual() ) {
+      return false;
+    }
+    return node.asText().equals("PCAWG2");
   }
 
   public Stream<RepositoryFile> convertFiles(SongAnalysis analysis) {

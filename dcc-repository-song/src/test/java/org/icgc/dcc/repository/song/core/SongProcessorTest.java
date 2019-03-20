@@ -19,9 +19,12 @@ package org.icgc.dcc.repository.song.core;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableSet;
 import lombok.val;
 import org.icgc.dcc.repository.core.model.Repositories;
 import org.icgc.dcc.repository.song.core.SongProcessor;
+import org.icgc.dcc.repository.song.model.SongAnalysis;
+import org.icgc.dcc.repository.song.reader.MockSongClient;
 import org.icgc.dcc.repository.song.reader.SongClient;
 import org.junit.Before;
 import org.junit.Test;
@@ -30,11 +33,14 @@ import java.io.IOException;
 
 import static com.fasterxml.jackson.core.JsonParser.Feature.AUTO_CLOSE_SOURCE;
 import static org.icgc.dcc.repository.core.util.RepositoryFileContexts.newLocalRepositoryFileContext;
+import static org.icgc.dcc.repository.song.model.AnalysisStates.PUBLISHED;
+import static org.icgc.dcc.repository.song.model.AnalysisStates.UNPUBLISHED;
 
 public class SongProcessorTest {
   private static final ObjectMapper MAPPER = new ObjectMapper().
     configure(AUTO_CLOSE_SOURCE, false);
   SongProcessor songProcessor;
+  SongClient songClient;
 
   @Before
   public void testExecute() throws IOException {
@@ -42,6 +48,7 @@ public class SongProcessorTest {
     val repository = Repositories.getCollabRepository();
 
     songProcessor = new SongProcessor(context, repository);
+    songClient = new MockSongClient("analyses.json", "studies.json");
   }
 
   @Test
@@ -53,6 +60,23 @@ public class SongProcessorTest {
     assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTA", true));
     assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTQ", false));
     assert "Unaligned Reads".equals(songProcessor.sequencingReadDataType("FASTQ", null));
+  }
+
+  @Test
+  public void testIsIndexable() {
+      val analyses = songClient.readAnalyses(ImmutableSet.of(UNPUBLISHED));
+      for(SongAnalysis a:analyses) {
+        System.err.printf("Checking analysis '%s'\n",a);
+        if (a.get(SongAnalysis.Field.analysisId).equals("AN1")) {
+          indexable(a,false);
+        } else {
+          indexable(a, true);
+        }
+      }
+  }
+
+  private void indexable(SongAnalysis analysis, boolean expected) {
+    assert songProcessor.isIndexable(analysis) == expected;
   }
 
   public JsonNode toJSON(String jsonString) throws IOException{

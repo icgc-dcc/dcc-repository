@@ -1,13 +1,13 @@
 [
   {
     "analysisType": "variantCall",
-    "info": "{}",
+    "info": "{\"dataset\": [\"PCAWG2\"]}",
     "analysisId": "AN1",
     "study": "ABC123",
     "analysisState": "UNPUBLISHED",
     "sample": [
       {
-        "info": "{}",
+        "info": "{ }",
         "sampleId": "SA11",
         "specimenId": "SP1",
         "sampleSubmitterId": "T285-G7-B9",
