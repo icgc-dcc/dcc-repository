@@ -38,6 +38,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <module>dcc-repository-pcawg</module>
     <module>dcc-repository-cloud</module>
     <module>dcc-repository-aws</module>
+    <module>dcc-repository-azure</module>
     <module>dcc-repository-collab</module>
     <module>dcc-repository-cghub</module>
     <module>dcc-repository-tcga</module>

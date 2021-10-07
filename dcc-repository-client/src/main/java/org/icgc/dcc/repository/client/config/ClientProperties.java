@@ -81,6 +81,8 @@ public class ClientProperties {
     String collabToken;
     String awsUrl;
     String awsToken;
+    String azureUrl;
+    String azureToken;
     String songPDCUrl;
     String songPDCToken;
 

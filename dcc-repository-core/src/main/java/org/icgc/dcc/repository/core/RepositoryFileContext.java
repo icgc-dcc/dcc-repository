@@ -70,6 +70,12 @@ public class RepositoryFileContext {
   @NonNull
   @Getter
   private final String awsToken;
+  @NonNull
+  @Getter
+  private final URL azureUrl;
+  @NonNull
+  @Getter
+  private final String azureToken;
   @Getter
   @NonNull
   private final URI archiveUri;

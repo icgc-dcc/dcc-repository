@@ -31,6 +31,7 @@ public enum RepositoryEnvironment implements Identifiable {
 
   OPEN_STACK("openstack"),
   AWS("aws"),
+  AZURE("azure"),
   INTERNET("internet");
 
   @NonNull

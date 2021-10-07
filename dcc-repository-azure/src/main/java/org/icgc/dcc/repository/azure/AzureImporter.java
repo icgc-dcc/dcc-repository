@@ -15,54 +15,27 @@
  * IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN                         
  * ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package org.icgc.dcc.repository.core.model;
+package org.icgc.dcc.repository.azure;
 
-import static com.google.common.base.Preconditions.checkState;
-import static lombok.AccessLevel.PRIVATE;
-
-import java.util.Arrays;
-
-import org.icgc.dcc.common.core.model.Identifiable;
-
-import lombok.Getter;
+import com.google.common.collect.ImmutableSet;
 import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-import lombok.val;
+import lombok.extern.slf4j.Slf4j;
+import org.icgc.dcc.repository.core.RepositoryFileContext;
+import org.icgc.dcc.repository.core.model.Repositories;
+import org.icgc.dcc.repository.song.SongImporter;
 
-@RequiredArgsConstructor(access = PRIVATE)
-public enum RepositoryCollection implements Identifiable {
+import static org.icgc.dcc.repository.song.model.AnalysisStates.PUBLISHED;
 
-  FILE("File", null),
-  EGA_FILE("EGAFile", RepositorySource.EGA),
-  CGHUB_FILE("CGHubFile", RepositorySource.CGHUB),
-  GDC_FILE("GDCFile", RepositorySource.GDC),
-  PDC_FILE("PDCFile", RepositorySource.PDC),
-  TCGA_FILE("TCGAFile", RepositorySource.TCGA),
-  PCAWG_FILE("PCAWGFile", RepositorySource.PCAWG),
-  AWS_FILE("AWSFile", RepositorySource.AWS),
-  AZURE_FILE("AzureFile", RepositorySource.AZURE),
-  COLLAB_FILE("CollabFile", RepositorySource.COLLAB),
-  SONGPDC_FILE("SONGPDCFile", RepositorySource.SONGPDC),
-  ;
+@Slf4j
+public class AzureImporter extends SongImporter {
 
-  @Getter
-  @NonNull
-  private final String id;
-
-  @Getter
-  private final RepositorySource source;
-
-  public static RepositoryCollection forSource(@NonNull RepositorySource source) {
-    for (val value : values()) {
-      if (source == value.getSource()) {
-        return value;
-      }
-    }
-
-    checkState(false, "Could not find collection for repository source %s. Possible values are: %s",
-        source, Arrays.toString(values()));
-
-    return null;
+  public AzureImporter(@NonNull RepositoryFileContext context) {
+    super(
+        context,
+        Repositories.getAzureRepository(),
+        context.getAzureUrl(),
+        context.getAzureToken(),
+        ImmutableSet.of(PUBLISHED) );
   }
 
 }
