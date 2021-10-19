@@ -25,7 +25,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
   </parent>
 
   <artifactId>dcc-repository</artifactId>
-  <version>5.1.4-SNAPSHOT</version>
+  <version>5.2.0</version>
   <packaging>pom</packaging>
 
   <name>${project.artifactId}</name>
@@ -38,6 +38,7 @@ ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF S
     <module>dcc-repository-pcawg</module>
     <module>dcc-repository-cloud</module>
     <module>dcc-repository-aws</module>
+    <module>dcc-repository-azure</module>
     <module>dcc-repository-collab</module>
     <module>dcc-repository-cghub</module>
     <module>dcc-repository-tcga</module>

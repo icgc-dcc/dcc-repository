@@ -72,6 +72,8 @@ imports:
   songPDCToken:
   awsUrl: https://virginia.song.icgc.org
   awsToken: test
+  azureUrl: https://song.azure.icgc.overture.bio
+  azureToken:
 
 # ID
 id:

@@ -85,6 +85,12 @@ public final class RepositoryFileContextBuilder {
   private String awsToken = "";
   @Setter
   @Accessors(chain = true, fluent = true)
+  private URL azureUrl = url("http://localhost:8080");
+  @Setter
+  @Accessors(chain = true, fluent = true)
+  private String azureToken = "";
+  @Setter
+  @Accessors(chain = true, fluent = true)
   private URI esUri = URIs.getUri("es://localhost:9300");
   @Setter
   @Accessors(chain = true, fluent = true)
@@ -133,7 +139,8 @@ public final class RepositoryFileContextBuilder {
     val idClient = createIdClient();
     val tcgaMappings = new TCGAMappingsReader().readMappings();
 
-    return new RepositoryFileContext(repoMongoUri, esUri, esSearchUrl, collabUrl, collabToken, songPDCUrl, songPDCToken, awsUrl, awsToken,
+    return new RepositoryFileContext(repoMongoUri, esUri, esSearchUrl, collabUrl, collabToken,
+        songPDCUrl, songPDCToken, awsUrl, awsToken, azureUrl, azureToken,
         archiveUri, indexAlias, skipImport, sources, readOnly,
         primarySites, idClient, tcgaMappings, pcawgIdResolver, dccIdResolver, report);
   }

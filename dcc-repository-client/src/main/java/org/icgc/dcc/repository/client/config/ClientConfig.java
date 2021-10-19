@@ -77,7 +77,9 @@ public class ClientConfig {
         .songPDCUrl(url(properties.getImports().getSongPDCUrl()))
         .songPDCToken(properties.getImports().getSongPDCToken())
         .awsUrl(url(properties.getImports().getAwsUrl()))
-        .awsToken(properties.getImports().getAwsToken());
+        .awsToken(properties.getImports().getAwsToken())
+        .azureUrl(url(properties.getImports().getAzureUrl()))
+        .azureToken(properties.getImports().getAzureToken());
     // Outputs
     context
         .repoMongoUri(properties.getRepository().getMongoUri())

@@ -34,6 +34,7 @@ import lombok.experimental.Accessors;
 public enum RepositorySource implements Identifiable {
 
   AWS("AWS"),
+  AZURE("AZURE"),
   CGHUB("CGHub"),
   PDC("PDC"),
   EGA("EGA"),

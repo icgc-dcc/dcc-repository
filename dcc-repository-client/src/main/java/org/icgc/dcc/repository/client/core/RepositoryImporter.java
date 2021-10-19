@@ -27,6 +27,7 @@ import java.util.Set;
 import org.icgc.dcc.common.core.mail.Mailer;
 import org.icgc.dcc.common.core.report.ReportEmail;
 import org.icgc.dcc.repository.aws.AWSImporter;
+import org.icgc.dcc.repository.azure.AzureImporter;
 import org.icgc.dcc.repository.cghub.CGHubImporter;
 import org.icgc.dcc.repository.collab.CollabImporter;
 import org.icgc.dcc.repository.collab.SONGPDCImporter;
@@ -250,6 +251,7 @@ public class RepositoryImporter {
         new PDCImporter(context),
         new EGAPCAWGImporter(context),
         new AWSImporter(context),
+        new AzureImporter(context),
         new CollabImporter(context),
         new TCGAImporter(context),
         new CGHubImporter(context),

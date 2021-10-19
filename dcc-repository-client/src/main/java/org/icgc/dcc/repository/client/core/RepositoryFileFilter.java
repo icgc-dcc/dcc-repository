@@ -23,6 +23,7 @@ import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableList;
 import static org.icgc.dcc.common.core.util.stream.Collectors.toImmutableSet;
 import static org.icgc.dcc.common.core.util.stream.Streams.stream;
 import static org.icgc.dcc.repository.core.model.Repositories.getAWSRepository;
+import static org.icgc.dcc.repository.core.model.Repositories.getAzureRepository;
 import static org.icgc.dcc.repository.core.model.Repositories.getCollabRepository;
 import static org.icgc.dcc.repository.core.model.Repositories.getEGARepository;
 
@@ -64,7 +65,7 @@ public class RepositoryFileFilter {
   }
 
   /**
-   * Used to see if a file was PCAWG published in GNOS before allowing it be published in AWS or Collab.
+   * Used to see if a file was PCAWG published in GNOS before allowing it be published in AWS, Azure, or Collab.
    *
    * @see https://jira.oicr.on.ca/browse/DCC-4605
    * @see https://jira.oicr.on.ca/browse/DCC-4843
@@ -78,7 +79,7 @@ public class RepositoryFileFilter {
     }
 
     // Not released via PCAWG yet so ignore
-    if (inAWS(repositories) || inCollab(repositories)) {
+    if (inAWS(repositories) || inCollab(repositories) || inAzure(repositories)) {
       return false;
     }
 
@@ -107,9 +108,14 @@ public class RepositoryFileFilter {
     return repositories.contains(getAWSRepository());
   }
 
+  private static boolean inAzure(Set<Repository> repositories) {
+    return repositories.contains(getAzureRepository());
+  }
+
   private static boolean inCollab(Set<Repository> repositories) {
     return repositories.contains(getCollabRepository());
   }
+
 
   private static Set<Repository> resolveRepositories(RepositoryFile file) {
     return file.getFileCopies().stream()
